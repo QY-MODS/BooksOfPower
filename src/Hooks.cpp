@@ -31,7 +31,7 @@ void Hooks::Install() {
 RE::MagicSystem::SpellType Hooks::ScrollSpellTypeHook::GetSpellType(RE::ScrollItem* ref) {
     auto result = originalFunction(ref);
 
-    if (ref->HasKeywordByEditorID("BOP_InfiniteScroll")) {
+    if (ref->HasKeywordByEditorID("BOP_ChannelingTome")) {
         return RE::MagicSystem::SpellType::kSpell;
     
     }
