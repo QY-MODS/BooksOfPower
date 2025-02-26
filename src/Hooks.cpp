@@ -31,7 +31,7 @@ void Hooks::Install() {
 }
 
 void Hooks::DataLoaded() {
-    spellBook = RE::TESForm::LookupByID<RE::TESObjectWEAP>(0xFE004802);
+    spellBook = RE::TESForm::LookupByEditorID<RE::TESObjectWEAP>("BOP_SpellBook");
     if (spellBook) {
         logger::trace("Name: {}", spellBook->GetName());
     } else {
