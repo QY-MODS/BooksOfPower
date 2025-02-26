@@ -2,6 +2,7 @@
 namespace Hooks {
 
     static inline RE::TESObjectWEAP* spellBook = nullptr;
+    inline bool RemoveBook = false;
 
     void Install();
 

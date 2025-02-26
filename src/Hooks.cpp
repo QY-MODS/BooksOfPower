@@ -74,6 +74,7 @@ void Hooks::EquipObjectHook::thunk(RE::ActorEquipManager* a_manager, RE::Actor* 
     auto player = RE::PlayerCharacter::GetSingleton();
     if (a_object->HasKeywordByEditorID("BOP_ChannelingTome")) {
         auto slot = GetSlot(true);
+        a_slot = GetSlot(false);
         if (slot && spellBook) {
             auto inv = player->GetInventory();
             if (inv.find(spellBook) == inv.end()) {
@@ -84,11 +85,13 @@ void Hooks::EquipObjectHook::thunk(RE::ActorEquipManager* a_manager, RE::Actor* 
         }
     }
     auto equipped = player->GetEquippedObject(true);
-    if (GetSlot(true) != a_slot || equipped != spellBook) {
+    if (GetSlot(true) != a_slot || equipped != spellBook || RemoveBook) {
         if (equipped->HasKeywordByEditorID("BOP_ChannelingTome")) {
             auto slot = GetSlot(true);
+            RemoveBook = true;
             RE::ActorEquipManager::GetSingleton()->UnequipObject(a_actor, spellBook, nullptr, 1, slot, false, true,
                                                                  false);
+            RemoveBook = false;
         }
         originalFunction(a_manager, a_actor, a_object, a_extraData, a_count, a_slot, a_queueEquip, a_forceEquip,
                          a_playSounds, a_applyNow);
