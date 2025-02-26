@@ -71,20 +71,28 @@ void Hooks::EquipObjectHook::thunk(RE::ActorEquipManager* a_manager, RE::Actor* 
                                    const RE::BGSEquipSlot* a_slot, bool a_queueEquip, bool a_forceEquip,
                                    bool a_playSounds, bool a_applyNow) {
 
+    auto player = RE::PlayerCharacter::GetSingleton();
     if (a_object->HasKeywordByEditorID("BOP_ChannelingTome")) {
-        auto player = RE::PlayerCharacter::GetSingleton();
         auto slot = GetSlot(true);
-        if (slot&&spellBook) {
-            player->AddObjectToContainer(spellBook, nullptr, 1, nullptr);
-
+        if (slot && spellBook) {
+            auto inv = player->GetInventory();
+            if (inv.find(spellBook) == inv.end()) {
+                player->AddObjectToContainer(spellBook, nullptr, 1, nullptr);
+            }
             RE::ActorEquipManager::GetSingleton()->EquipObject(player, spellBook, nullptr, 1, slot, false, true,
                                                                false, true);
         }
-        logger::trace("hello");
     }
-
-    originalFunction(a_manager, a_actor, a_object, a_extraData, a_count, a_slot, a_queueEquip, a_forceEquip,
-                     a_playSounds, a_applyNow);
+    auto equipped = player->GetEquippedObject(true);
+    if (GetSlot(true) != a_slot || equipped != spellBook) {
+        if (equipped->HasKeywordByEditorID("BOP_ChannelingTome")) {
+            auto slot = GetSlot(true);
+            RE::ActorEquipManager::GetSingleton()->UnequipObject(a_actor, spellBook, nullptr, 1, slot, false, true,
+                                                                 false);
+        }
+        originalFunction(a_manager, a_actor, a_object, a_extraData, a_count, a_slot, a_queueEquip, a_forceEquip,
+                         a_playSounds, a_applyNow);
+    }
 }
 
 void Hooks::UnEquipObjectPCHook::Install() {
@@ -104,6 +112,7 @@ void Hooks::UnEquipObjectPCHook::thunk(RE::ActorEquipManager* a_manager, RE::Act
         auto slot = GetSlot(true);
         RE::ActorEquipManager::GetSingleton()->UnequipObject(a_actor, spellBook, nullptr, 1, slot,false,true,false);
     }
+    logger::trace("unequipped");
     originalFunction(a_manager, a_actor, a_object, a_extraData, a_count, a_slot, a_queueEquip, a_forceEquip,
-                     a_playSounds, a_applyNow, a_slotToReplace);
+                        a_playSounds, a_applyNow, a_slotToReplace);
 }
