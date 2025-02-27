@@ -35,8 +35,6 @@ bool ScrollManager::OnEquip(RE::Actor* player, RE::TESBoundObject* a_object, RE:
     auto left = GetSlot(true);
     auto right = GetSlot(false);
 
-
-
     if (leftHandItem == spellBook) {
 
         if (rightHandItem) {
@@ -60,6 +58,7 @@ bool ScrollManager::OnEquip(RE::Actor* player, RE::TESBoundObject* a_object, RE:
     }
 
     if (a_object->HasKeywordByEditorID("BOP_ChannelingTome")) {
+
         *a_slot = right;
         if (left && spellBook) {
             auto inv = player->GetInventory();
