@@ -11,7 +11,7 @@ void UI::Register() {
 
 void __stdcall UI::Example1::Render() {
     if (ImGui::Button("Test")) {
-    
+
     }
 }
 

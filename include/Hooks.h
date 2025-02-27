@@ -1,12 +1,10 @@
 #pragma once
 namespace Hooks {
 
-    static inline RE::TESObjectWEAP* spellBook = nullptr;
-    inline bool RemoveBook = false;
+
 
     void Install();
 
-    void DataLoaded();
 
     struct ScrollSpellTypeHook {
         static inline REL::Relocation<RE::MagicSystem::SpellType(RE::ScrollItem*)> originalFunction;

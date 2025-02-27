@@ -1,6 +1,5 @@
 #include "Hooks.h"
-
-#include "Hooks.h"
+#include "ScrollManager.h"
 
 // void Hooks::GetActorValueForCost::Install() {
 //     SKSE::AllocTrampoline(14);
@@ -30,14 +29,7 @@ void Hooks::Install() {
     UnEquipObjectPCHook::Install();
 }
 
-void Hooks::DataLoaded() {
-    spellBook = RE::TESForm::LookupByEditorID<RE::TESObjectWEAP>("BOP_SpellBook");
-    if (spellBook) {
-        logger::trace("Name: {}", spellBook->GetName());
-    } else {
-        logger::trace("aa");
-    }
-}
+
 
 RE::MagicSystem::SpellType Hooks::ScrollSpellTypeHook::GetSpellType(RE::ScrollItem* ref) {
     auto result = originalFunction(ref);
@@ -59,43 +51,19 @@ void Hooks::EquipObjectHook::Install() {
     originalFunction = trampoline.write_call<5>(REL::RelocationID(37951, 38907).address() + REL::Relocate(0x2e0, 0x2e0), thunk);
 }
 
-RE::BGSEquipSlot* GetSlot(bool left) {
-    auto dom = RE::BGSDefaultObjectManager::GetSingleton();
-    auto slot = dom->GetObject(left ? RE::DEFAULT_OBJECT::kLeftHandEquip : RE::DEFAULT_OBJECT::kRightHandEquip);
-    //TODO: Null check?
-    return slot->As<RE::BGSEquipSlot>();
-}
+
 
 void Hooks::EquipObjectHook::thunk(RE::ActorEquipManager* a_manager, RE::Actor* a_actor, RE::TESBoundObject* a_object,
                                    RE::ExtraDataList* a_extraData, std::uint32_t a_count,
                                    const RE::BGSEquipSlot* a_slot, bool a_queueEquip, bool a_forceEquip,
                                    bool a_playSounds, bool a_applyNow) {
 
-    auto player = RE::PlayerCharacter::GetSingleton();
-    if (a_object->HasKeywordByEditorID("BOP_ChannelingTome")) {
-        auto slot = GetSlot(true);
-        a_slot = GetSlot(false);
-        if (slot && spellBook) {
-            auto inv = player->GetInventory();
-            if (inv.find(spellBook) == inv.end()) {
-                player->AddObjectToContainer(spellBook, nullptr, 1, nullptr);
-            }
-            RE::ActorEquipManager::GetSingleton()->EquipObject(player, spellBook, nullptr, 1, slot, false, true,
-                                                               false, true);
-        }
-    }
-    auto equipped = player->GetEquippedObject(true);
-    if (GetSlot(true) != a_slot || equipped != spellBook || RemoveBook) {
-        if (equipped->HasKeywordByEditorID("BOP_ChannelingTome")) {
-            auto slot = GetSlot(true);
-            RemoveBook = true;
-            RE::ActorEquipManager::GetSingleton()->UnequipObject(a_actor, spellBook, nullptr, 1, slot, false, true,
-                                                                 false);
-            RemoveBook = false;
-        }
+    if (ScrollManager::OnEquip(a_actor, a_object, &a_slot)) {
         originalFunction(a_manager, a_actor, a_object, a_extraData, a_count, a_slot, a_queueEquip, a_forceEquip,
                          a_playSounds, a_applyNow);
     }
+
+
 }
 
 void Hooks::UnEquipObjectPCHook::Install() {
@@ -110,12 +78,9 @@ void Hooks::UnEquipObjectPCHook::thunk(RE::ActorEquipManager* a_manager, RE::Act
                                        std::uint32_t a_count, const RE::BGSEquipSlot* a_slot, bool a_queueEquip,
                                        bool a_forceEquip, bool a_playSounds, bool a_applyNow,
                                        const RE::BGSEquipSlot* a_slotToReplace) {
-    if (a_object->HasKeywordByEditorID("BOP_ChannelingTome")) {
-        auto player = RE::PlayerCharacter::GetSingleton();
-        auto slot = GetSlot(true);
-        RE::ActorEquipManager::GetSingleton()->UnequipObject(a_actor, spellBook, nullptr, 1, slot,false,true,false);
+
+    if (ScrollManager::OnUnEquip(a_actor, a_object, a_slot)) {
+        originalFunction(a_manager, a_actor, a_object, a_extraData, a_count, a_slot, a_queueEquip, a_forceEquip,
+                            a_playSounds, a_applyNow, a_slotToReplace);
     }
-    logger::trace("unequipped");
-    originalFunction(a_manager, a_actor, a_object, a_extraData, a_count, a_slot, a_queueEquip, a_forceEquip,
-                        a_playSounds, a_applyNow, a_slotToReplace);
 }

@@ -1,8 +1,9 @@
 #include "Plugin.h"
 #include "Hooks.h"
+#include "ScrollManager.h"
 void OnMessage(SKSE::MessagingInterface::Message* message) {
     if (message->type == SKSE::MessagingInterface::kDataLoaded) {
-        Hooks::DataLoaded();
+        ScrollManager::DataLoaded();
     }
     if (message->type == SKSE::MessagingInterface::kPostLoad) {
     }

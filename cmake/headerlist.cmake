@@ -5,4 +5,5 @@ set(headers ${headers}
 	include/UI.h
 	include/imgui.h
 	include/Hooks.h
+	include/ScrollManager.h
 )
