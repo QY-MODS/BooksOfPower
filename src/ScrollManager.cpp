@@ -16,36 +16,50 @@ void ScrollManager::DataLoaded() {
     }
 }
 
-bool ScrollManager::OnEquip(RE::Actor* player, RE::TESBoundObject* a_object, const RE::BGSEquipSlot** a_slot) {
+bool ScrollManager::OnEquip(RE::Actor* player, RE::TESBoundObject* a_object, RE::BGSEquipSlot** a_slot) {
+
+    if (!a_object) {
+        return true;
+    }
 
     if (!player || !player->IsPlayerRef()) {
         return true;
     }
 
-    if (RemoveBook) {
+    if (DefaultBehavior) {
         return true;
     }
-    auto equipped = player->GetEquippedObject(true);
-    auto scroll = player->GetEquippedObject(false);
+
+    auto leftHandItem = player->GetEquippedObject(true);
+    auto rightHandItem = player->GetEquippedObject(false);
     auto left = GetSlot(true);
     auto right = GetSlot(false);
 
-    if (equipped == spellBook && *a_slot == left) {
 
-        RemoveBook = true;
-        if (scroll) {
-            if (auto bound = scroll->As<RE::TESBoundObject>()) {
-                RE::ActorEquipManager::GetSingleton()->UnequipObject(player, bound, nullptr, 1, right, false, true, false);
+
+    if (leftHandItem == spellBook) {
+
+        if (rightHandItem) {
+            if (auto bound = rightHandItem->As<RE::TESBoundObject>()) {
+                DefaultBehavior = true;
+                RE::ActorEquipManager::GetSingleton()->UnequipObject(player, bound, nullptr, 1, right, false, true,
+                                                                     false);
+                DefaultBehavior = false;
             }
         }
-        RemoveBook = false;
 
-        return true;
+    }
+
+    if (rightHandItem && rightHandItem->HasKeywordByEditorID("BOP_ChannelingTome")) {
+
+        if (auto bound = leftHandItem->As<RE::TESBoundObject>()) {
+            DefaultBehavior = true;
+            RE::ActorEquipManager::GetSingleton()->UnequipObject(player, bound, nullptr, 1, left, false, true,false);
+            DefaultBehavior = false;
+        }
     }
 
     if (a_object->HasKeywordByEditorID("BOP_ChannelingTome")) {
-
-
         *a_slot = right;
         if (left && spellBook) {
             auto inv = player->GetInventory();
@@ -56,21 +70,19 @@ bool ScrollManager::OnEquip(RE::Actor* player, RE::TESBoundObject* a_object, con
                                                                true);
         }
     }
-    if (GetSlot(true) != *a_slot || equipped != spellBook) {
-        if (equipped && equipped->HasKeywordByEditorID("BOP_ChannelingTome")) {
-            RemoveBook = true;
-            RE::ActorEquipManager::GetSingleton()->UnequipObject(player, spellBook, nullptr, 1, left, false, true,
-                                                                 false);
-            RemoveBook = false;
-        }
-        return true;
-    }
-    return false;
-
+    return true;
 }
 
-bool ScrollManager::OnUnEquip(RE::Actor* player, RE::TESBoundObject* a_object, const RE::BGSEquipSlot* a_slot) {
+bool ScrollManager::OnUnEquip(RE::Actor* player, RE::TESBoundObject* a_object, RE::BGSEquipSlot* a_slot) {
+
+    if (!a_object) {
+        return true;
+    }
+
     if (!player || !player->IsPlayerRef()) {
+        return true;
+    }
+    if (DefaultBehavior) {
         return true;
     }
 

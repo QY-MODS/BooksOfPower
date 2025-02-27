@@ -16,19 +16,26 @@ namespace Hooks {
         static void Install();
         static void thunk(RE::ActorEquipManager* a_manager, RE::Actor* a_actor, RE::TESBoundObject* a_object,
                           RE::ExtraDataList* a_extraData = nullptr, std::uint32_t a_count = 1,
-                          const RE::BGSEquipSlot* a_slot = nullptr, bool a_queueEquip = true, bool a_forceEquip = false,
+                          RE::BGSEquipSlot* a_slot = nullptr, bool a_queueEquip = true, bool a_forceEquip = false,
                           bool a_playSounds = true, bool a_applyNow = false);
         static inline REL::Relocation<decltype(thunk)> originalFunction;
     };
+
+    struct EquipSpellHook {
+        static void thunk(RE::ActorEquipManager* a_manager, RE::Actor* a_actor, RE::SpellItem* a_spell,
+                          RE::BGSEquipSlot** a_slot);
+        static inline REL::Relocation<decltype(thunk)> originalFunction;
+        static void Install();
+    };
+
 
     
     struct UnEquipObjectPCHook {
         static void Install();
         static void thunk(RE::ActorEquipManager* a_manager, RE::Actor* a_actor, RE::TESBoundObject* a_object,
-                          RE::ExtraDataList* a_extraData = nullptr, std::uint32_t a_count = 1,
-                          const RE::BGSEquipSlot* a_slot = nullptr, bool a_queueEquip = true, bool a_forceEquip = false,
-                          bool a_playSounds = true, bool a_applyNow = false,
-                          const RE::BGSEquipSlot* a_slotToReplace = nullptr);
+                          RE::ExtraDataList* a_extraData, std::uint32_t a_count, RE::BGSEquipSlot* a_slot,
+                          bool a_queueEquip, bool a_forceEquip, bool a_playSounds, bool a_applyNow,
+                          RE::BGSEquipSlot* a_slotToReplace);
         static inline REL::Relocation<decltype(thunk)> originalFunction;
     };
 
