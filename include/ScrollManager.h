@@ -2,6 +2,15 @@
 
 
 class ScrollManager {
+
+    static inline std::map<std::string, std::string> replaceModels = {
+        {"Clutter\\Books\\SpellTomeAlterationLowPoly.nif", "Books Of Power\\SpellTomeAlterationLowPoly.nif"},
+        {"Clutter\\Books\\SpellTomeConjurationLowPoly.nif", "Books Of Power\\SpellTomeConjurationLowPoly.nif"},
+        {"Clutter\\Books\\SpellTomeAlterationLowPoly.nif", "Books Of Power\\SpellTomeDestructionLowPoly.nif"},
+        {"Clutter\\Books\\SpellTomeAlterationLowPoly.nif", "Books Of Power\\SpellTomeRestorationLowPoly.nif"},
+        {"Clutter\\Books\\SpellTomeAlterationLowPoly.nif", "Books Of Power\\SpellTomeIllusionLowPoly.nif"},
+    };
+
     static inline RE::TESObjectWEAP* spellBook = nullptr;
     static inline RE::BGSKeyword* keyword = nullptr;
     static inline bool DefaultBehavior = false;

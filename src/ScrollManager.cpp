@@ -48,7 +48,13 @@ void ScrollManager::ReplaceSpellTome(RE::TESObjectBOOK* book) {
             }
             newBook->SpellItem::data = spell->data;
             newBook->AddKeyword(keyword);
-            newBook->SetModel(model);
+            auto it = replaceModels.find(model);
+            if (it != replaceModels.end()) {
+                newBook->SetModel(it->second.c_str());
+            } else {
+                newBook->SetModel(model);
+            }
+            logger::trace("{}", model);
             newBook->weight = weight;
             newBook->value = value;
             newBook->SetFullName(name);
