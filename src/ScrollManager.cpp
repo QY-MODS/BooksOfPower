@@ -44,9 +44,20 @@ void ScrollManager::ReplaceSpellTome(RE::TESObjectBOOK* book) {
             newBook->weight = weight;
             newBook->value = value;
             newBook->SetFullName(name);
+            newBook->CopyMagicItemData(spell);
             newBook->SetFormID(id, false);
+            skills[newBook] = spell->GetAssociatedSkill();
+
         }
     }
+}
+
+RE::ActorValue ScrollManager::GetSkill(RE::ScrollItem* item) { 
+    auto it = skills.find(item);
+    if (it != skills.end()) {
+        return it->second;
+    }
+    return RE::ActorValue::kDestruction;
 }
 
 void ScrollManager::DataLoaded() {
@@ -102,11 +113,12 @@ bool ScrollManager::OnEquip(RE::Actor* player, RE::TESBoundObject* a_object, RE:
     }
 
     if (rightHandItem && rightHandItem->HasKeywordByEditorID("BOP_ChannelingTome")) {
-
-        if (auto bound = leftHandItem->As<RE::TESBoundObject>()) {
-            DefaultBehavior = true;
-            RE::ActorEquipManager::GetSingleton()->UnequipObject(player, bound, nullptr, 1, left, false, true,false);
-            DefaultBehavior = false;
+        if (leftHandItem) {
+            if (auto bound = leftHandItem->As<RE::TESBoundObject>()) {
+                DefaultBehavior = true;
+                RE::ActorEquipManager::GetSingleton()->UnequipObject(player, bound, nullptr, 1, left, false, true,false);
+                DefaultBehavior = false;
+            }
         }
     }
 
@@ -114,7 +126,8 @@ bool ScrollManager::OnEquip(RE::Actor* player, RE::TESBoundObject* a_object, RE:
 
         *a_slot = right;
         if (auto scroll = a_object->As<RE::ScrollItem>()) {
-            auto it = handBooks.find(scroll->GetAssociatedSkill());
+
+            auto it = handBooks.find(GetSkill(scroll));
             if (it != handBooks.end()) {
                 it->second->Equip(player);
             }

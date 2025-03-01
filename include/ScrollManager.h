@@ -28,9 +28,12 @@ class ScrollManager {
         {RE::ActorValue::kConjuration, new HandBook("BOP_ConjurationSpellBook")},
     };
 
+    static inline std::map<RE::ScrollItem*, RE::ActorValue> skills;
+
     static inline RE::BGSKeyword* keyword = nullptr;
     static inline bool DefaultBehavior = false;
     static void ReplaceSpellTome(RE::TESObjectBOOK* book);
+    static RE::ActorValue GetSkill(RE::ScrollItem* item);
 
 public:
     static void SaveGame(Serializer* serializer);
