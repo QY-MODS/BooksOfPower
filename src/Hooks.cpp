@@ -22,14 +22,7 @@
 //     return RE::ActorValue::kMagicka;
 // }
 
-void Hooks::Install() {
-    // GetActorValueForCost::Install();
-    ScrollSpellTypeHook::Install();
-    GetCastingTypeHook::Install();
-    EquipObjectHook::Install();
-    UnEquipObjectPCHook::Install();
-    EquipSpellHook::Install();
-}
+
 
 
 
@@ -125,4 +118,27 @@ RE::MagicSystem::CastingType Hooks::GetCastingTypeHook::GetCastingType(RE::Scrol
 
 void Hooks::GetCastingTypeHook::Install() {
     originalFunction = REL::Relocation<std::uintptr_t>(RE::ScrollItem::VTABLE[0]).write_vfunc(0x55, GetCastingType);
+}
+
+float Hooks::GetChargeTimeHook::GetChargeTime(RE::ScrollItem* ref) { 
+    if (ref && ref->HasKeywordByEditorID("BOP_ChannelingTome")) {
+        return ref->SpellItem::data.chargeTime * 10;
+    }
+    return originalFunction(ref);
+}
+
+void Hooks::GetChargeTimeHook::Install() {
+    originalFunction = REL::Relocation<std::uintptr_t>(RE::ScrollItem::VTABLE[0]).write_vfunc(0x64, GetChargeTime);
+}
+
+
+
+void Hooks::Install() {
+    // GetActorValueForCost::Install();
+    ScrollSpellTypeHook::Install();
+    GetCastingTypeHook::Install();
+    EquipObjectHook::Install();
+    UnEquipObjectPCHook::Install();
+    EquipSpellHook::Install();
+    GetChargeTimeHook::Install();
 }

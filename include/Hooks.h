@@ -18,6 +18,12 @@ namespace Hooks {
         static void Install();
     };
 
+    struct GetChargeTimeHook {
+        static inline REL::Relocation<float(RE::SpellItem*)> originalFunction;
+        static float GetChargeTime(RE::ScrollItem* ref);
+        static void Install();
+    };
+
     struct EquipObjectHook {
         static void Install();
         static void thunk(RE::ActorEquipManager* a_manager, RE::Actor* a_actor, RE::TESBoundObject* a_object,
