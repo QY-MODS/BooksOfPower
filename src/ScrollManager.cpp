@@ -7,12 +7,69 @@ RE::BGSEquipSlot* GetSlot(bool left) {
     return slot->As<RE::BGSEquipSlot>();
 }
 
+RE::TESForm* CreateFormByType(RE::FormType type) {
+    using func_t = RE::TESForm*(RE::FormType);
+    const REL::Relocation<func_t> func{RELOCATION_ID(13656, 13765)};
+    auto result = func(type);
+    result->SetFormID(result->GetFormID(), true);
+    return result;
+}
+
 void ScrollManager::DataLoaded() {
     spellBook = RE::TESForm::LookupByEditorID<RE::TESObjectWEAP>("BOP_SpellBook");
     if (spellBook) {
         logger::trace("Name: {}", spellBook->GetName());
     } else {
         logger::trace("aa");
+    }
+    auto keyword = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("BOP_ChannelingTome");
+    auto scroll = RE::TESForm::LookupByEditorID<RE::ScrollItem>("BOP_FireballScroll");
+    if (scroll) {
+        const auto& [map, lock] = RE::TESForm::GetAllForms();
+        const RE::BSReadWriteLock l{lock};
+        for (auto& [id, form] : *map) {
+            if (form) {
+                if (auto book = form->As<RE::TESObjectBOOK>()) {
+                    if (book->IsBookTome()) {
+                        auto spell = book->GetSpell();
+
+                        if (!spell) {
+                            continue;
+                        }
+                    
+                        auto id = form->GetFormID();
+                        auto model = book->GetModel();
+                        auto name = form->GetName();
+                        auto value = book->GetGoldValue();
+                        auto weight = book->GetWeight();
+                        book->SetFormID(0, false);
+                        auto df = CreateFormByType(scroll->GetFormType());
+                        if (df) {
+                            if (auto newBook = df->As<RE::ScrollItem>()) {
+
+                                for (auto effect : spell->effects) {
+                                    auto copy = new RE::Effect();
+                                    copy->effectItem = effect->effectItem;
+
+                                    copy->baseEffect = effect->baseEffect;
+                                    copy->cost = effect->cost;
+                                    copy->conditions = effect->conditions;
+
+                                    newBook->effects.push_back(copy);
+                                }
+                                newBook->SpellItem::data = spell->data;
+                                newBook->AddKeyword(keyword);
+                                newBook->SetModel(model);
+                                newBook->weight = weight;
+                                newBook->value = value;
+                                newBook->SetFullName(name);
+                                newBook->SetFormID(id, false);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
