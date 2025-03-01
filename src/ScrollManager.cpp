@@ -11,7 +11,7 @@ RE::TESForm* CreateFormByType(RE::FormType type) {
     using func_t = RE::TESForm*(RE::FormType);
     const REL::Relocation<func_t> func{RELOCATION_ID(13656, 13765)};
     auto result = func(type);
-    result->SetFormID(result->GetFormID(), true);
+    //result->SetFormID(result->GetFormID(), true);
     return result;
 }
 
