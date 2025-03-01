@@ -7,7 +7,7 @@
 				"keywords": ["BOP_ChannelingTome"]
 			},
 			"assign": {
-				"subTypeDisplay": "$Abs",
+				"subTypeDisplay": "Channeling Tome",
 				"iconSource": "SkyUI/icons_item_psychosteve.swf",
 				"iconLabel": "book_tome",
 				"iconColor": "#ffffff"
