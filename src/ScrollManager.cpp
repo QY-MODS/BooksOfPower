@@ -15,15 +15,54 @@ RE::TESForm* CreateFormByType(RE::FormType type) {
     return result;
 }
 
+void ScrollManager::ReplaceSpellTome(RE::TESObjectBOOK* book) {
+    auto spell = book->GetSpell();
+
+    if (!spell) {
+        return;
+    }
+
+    auto id = book->GetFormID();
+    auto model = book->GetModel();
+    auto name = book->GetName();
+    auto value = book->GetGoldValue();
+    auto weight = book->GetWeight();
+
+    book->SetFormID(0, false);
+
+    auto df = CreateFormByType(RE::FormType::Scroll);
+    if (df) {
+        if (auto newBook = df->As<RE::ScrollItem>()) {
+            for (auto effect : spell->effects) {
+                auto copy = new RE::Effect();
+                copy->effectItem = effect->effectItem;
+
+                copy->baseEffect = effect->baseEffect;
+                copy->cost = effect->cost;
+                copy->conditions = effect->conditions;
+
+                newBook->effects.push_back(copy);
+            }
+            for (auto key : book->GetKeywords()) {
+                newBook->AddKeyword(key);
+            }
+            newBook->SpellItem::data = spell->data;
+            newBook->AddKeyword(keyword);
+            newBook->SetModel(model);
+            newBook->weight = weight;
+            newBook->value = value;
+            newBook->SetFullName(name);
+            newBook->SetFormID(id, false);
+        }
+    }
+}
+
 void ScrollManager::DataLoaded() {
     spellBook = RE::TESForm::LookupByEditorID<RE::TESObjectWEAP>("BOP_SpellBook");
-    if (spellBook) {
-        logger::trace("Name: {}", spellBook->GetName());
-    } else {
-        logger::trace("aa");
-    }
-    auto keyword = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("BOP_ChannelingTome");
+    keyword = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("BOP_ChannelingTome");
+
     auto scroll = RE::TESForm::LookupByEditorID<RE::ScrollItem>("BOP_FireballScroll");
+
     if (scroll) {
         const auto& [map, lock] = RE::TESForm::GetAllForms();
         const RE::BSReadWriteLock l{lock};
@@ -31,41 +70,7 @@ void ScrollManager::DataLoaded() {
             if (form) {
                 if (auto book = form->As<RE::TESObjectBOOK>()) {
                     if (book->IsBookTome()) {
-                        auto spell = book->GetSpell();
-
-                        if (!spell) {
-                            continue;
-                        }
-                    
-                        auto id = form->GetFormID();
-                        auto model = book->GetModel();
-                        auto name = form->GetName();
-                        auto value = book->GetGoldValue();
-                        auto weight = book->GetWeight();
-                        book->SetFormID(0, false);
-                        auto df = CreateFormByType(scroll->GetFormType());
-                        if (df) {
-                            if (auto newBook = df->As<RE::ScrollItem>()) {
-
-                                for (auto effect : spell->effects) {
-                                    auto copy = new RE::Effect();
-                                    copy->effectItem = effect->effectItem;
-
-                                    copy->baseEffect = effect->baseEffect;
-                                    copy->cost = effect->cost;
-                                    copy->conditions = effect->conditions;
-
-                                    newBook->effects.push_back(copy);
-                                }
-                                newBook->SpellItem::data = spell->data;
-                                newBook->AddKeyword(keyword);
-                                newBook->SetModel(model);
-                                newBook->weight = weight;
-                                newBook->value = value;
-                                newBook->SetFullName(name);
-                                newBook->SetFormID(id, false);
-                            }
-                        }
+                        ReplaceSpellTome(book);
                     }
                 }
             }
