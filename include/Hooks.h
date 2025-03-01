@@ -12,6 +12,12 @@ namespace Hooks {
         static void Install();
     };
 
+    struct GetCastingTypeHook {
+        static inline REL::Relocation<RE::MagicSystem::CastingType(RE::ScrollItem*)> originalFunction;
+        static RE::MagicSystem::CastingType GetCastingType(RE::ScrollItem* ref);
+        static void Install();
+    };
+
     struct EquipObjectHook {
         static void Install();
         static void thunk(RE::ActorEquipManager* a_manager, RE::Actor* a_actor, RE::TESBoundObject* a_object,

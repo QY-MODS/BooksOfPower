@@ -3,4 +3,5 @@ set(sources ${sources}
 	src/UI.cpp
 	src/Hooks.cpp
 	src/ScrollManager.cpp
+	src/Persistence.cpp
 )

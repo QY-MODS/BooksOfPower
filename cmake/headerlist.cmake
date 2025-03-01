@@ -6,4 +6,6 @@ set(headers ${headers}
 	include/imgui.h
 	include/Hooks.h
 	include/ScrollManager.h
+	include/Persistence.h
+	include/Serializer.h
 )

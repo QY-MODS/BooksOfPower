@@ -1,6 +1,5 @@
 #pragma once
 
-
 class ScrollManager {
 
     static inline std::map<std::string, std::string> replaceModels = {

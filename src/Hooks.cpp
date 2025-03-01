@@ -25,6 +25,7 @@
 void Hooks::Install() {
     // GetActorValueForCost::Install();
     ScrollSpellTypeHook::Install();
+    GetCastingTypeHook::Install();
     EquipObjectHook::Install();
     UnEquipObjectPCHook::Install();
     EquipSpellHook::Install();
@@ -35,10 +36,10 @@ void Hooks::Install() {
 RE::MagicSystem::SpellType Hooks::ScrollSpellTypeHook::GetSpellType(RE::ScrollItem* ref) {
     auto result = originalFunction(ref);
 
-    if (ref->HasKeywordByEditorID("BOP_ChannelingTome")) {
+    if (ref && ref->HasKeywordByEditorID("BOP_ChannelingTome")) {
         return RE::MagicSystem::SpellType::kSpell;
-    
     }
+
     return result;
 }
 
@@ -113,4 +114,15 @@ void Hooks::EquipSpellHook::Install() {
     // trampoline.write_call<5>(REL::RelocationID(37950, 38906).address() + REL::Relocate(0xc5, 0xca), thunk); // Hotkey
     // trampoline.write_call<5>(REL::RelocationID(37939, 38895).address() + REL::Relocate(0x47, 0x47), thunkPresise); //
     // Commonlib
+}
+
+RE::MagicSystem::CastingType Hooks::GetCastingTypeHook::GetCastingType(RE::ScrollItem* ref) {
+    if (ref && ref->HasKeywordByEditorID("BOP_ChannelingTome")) {
+        return ref->SpellItem::data.castingType;
+    }
+    return originalFunction(ref);
+}
+
+void Hooks::GetCastingTypeHook::Install() {
+    originalFunction = REL::Relocation<std::uintptr_t>(RE::ScrollItem::VTABLE[0]).write_vfunc(0x55, GetCastingType);
 }
