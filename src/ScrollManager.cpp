@@ -1,19 +1,5 @@
 #include "ScrollManager.h"
-
-RE::BGSEquipSlot* GetSlot(bool left) {
-    auto dom = RE::BGSDefaultObjectManager::GetSingleton();
-    auto slot = dom->GetObject(left ? RE::DEFAULT_OBJECT::kLeftHandEquip : RE::DEFAULT_OBJECT::kRightHandEquip);
-    // TODO: Null check?
-    return slot->As<RE::BGSEquipSlot>();
-}
-
-RE::TESForm* CreateFormByType(RE::FormType type) {
-    using func_t = RE::TESForm*(RE::FormType);
-    const REL::Relocation<func_t> func{RELOCATION_ID(13656, 13765)};
-    auto result = func(type);
-    //result->SetFormID(result->GetFormID(), true);
-    return result;
-}
+#include "Utils.h"
 
 void ScrollManager::ReplaceSpellTome(RE::TESObjectBOOK* book) {
     auto spell = book->GetSpell();
@@ -30,7 +16,7 @@ void ScrollManager::ReplaceSpellTome(RE::TESObjectBOOK* book) {
 
     book->SetFormID(0, false);
 
-    auto df = CreateFormByType(RE::FormType::Scroll);
+    auto df = Utils::CreateFormByType(RE::FormType::Scroll);
     if (df) {
         if (auto newBook = df->As<RE::ScrollItem>()) {
             for (auto effect : spell->effects) {
@@ -64,7 +50,6 @@ void ScrollManager::ReplaceSpellTome(RE::TESObjectBOOK* book) {
 }
 
 void ScrollManager::DataLoaded() {
-    spellBook = RE::TESForm::LookupByEditorID<RE::TESObjectWEAP>("BOP_SpellBook");
     keyword = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("BOP_ChannelingTome");
 
     auto scroll = RE::TESForm::LookupByEditorID<RE::ScrollItem>("BOP_FireballScroll");
@@ -100,10 +85,10 @@ bool ScrollManager::OnEquip(RE::Actor* player, RE::TESBoundObject* a_object, RE:
 
     auto leftHandItem = player->GetEquippedObject(true);
     auto rightHandItem = player->GetEquippedObject(false);
-    auto left = GetSlot(true);
-    auto right = GetSlot(false);
+    auto left = Utils::GetSlot(true);
+    auto right = Utils::GetSlot(false);
 
-    if (leftHandItem == spellBook) {
+    if (leftHandItem && leftHandItem->HasKeywordByEditorID("BOP_HandBook")) {
 
         if (rightHandItem) {
             if (auto bound = rightHandItem->As<RE::TESBoundObject>()) {
@@ -128,13 +113,11 @@ bool ScrollManager::OnEquip(RE::Actor* player, RE::TESBoundObject* a_object, RE:
     if (a_object->HasKeywordByEditorID("BOP_ChannelingTome")) {
 
         *a_slot = right;
-        if (left && spellBook) {
-            auto inv = player->GetInventory();
-            if (inv.find(spellBook) == inv.end()) {
-                player->AddObjectToContainer(spellBook, nullptr, 1, nullptr);
+        if (auto scroll = a_object->As<RE::ScrollItem>()) {
+            auto it = handBooks.find(scroll->GetAssociatedSkill());
+            if (it != handBooks.end()) {
+                it->second->Equip(player);
             }
-            RE::ActorEquipManager::GetSingleton()->EquipObject(player, spellBook, nullptr, 1, left, false, true, false,
-                                                               true);
         }
     }
     return true;
@@ -155,8 +138,42 @@ bool ScrollManager::OnUnEquip(RE::Actor* player, RE::TESBoundObject* a_object, R
 
     if (a_object->HasKeywordByEditorID("BOP_ChannelingTome")) {
         auto player = RE::PlayerCharacter::GetSingleton();
-        auto slot = GetSlot(true);
-        RE::ActorEquipManager::GetSingleton()->UnequipObject(player, spellBook, nullptr, 1, slot, false, true, false);
+        auto slot = Utils::GetSlot(true);
+        auto obj = player->GetEquippedObject(true);
+        if (obj) {
+            if (auto bound = obj->As<RE::TESObjectWEAP>()) {
+                if (bound->HasKeywordByEditorID("BOP_HandBook")) {
+                    RE::ActorEquipManager::GetSingleton()->UnequipObject(player, bound, nullptr, 1, slot, false, true, false);
+                }
+            }
+        }
     }
     return true;
+}
+
+RE::TESObjectWEAP* HandBook::GetWeapon() {
+    if (weapon == nullptr) {
+        weapon = RE::TESForm::LookupByEditorID<RE::TESObjectWEAP>(weaponEditorId);
+    }
+    return weapon;
+}
+
+void HandBook::Equip(RE::Actor* actor) {
+    auto obj = GetWeapon();
+
+    if (obj == nullptr) {
+        return;
+    }
+
+    if (actor == nullptr) {
+        return;
+    }
+    auto inv = actor->GetInventory();
+
+    if (inv.find(obj) == inv.end()) {
+        actor->AddObjectToContainer(obj, nullptr, 1, nullptr);
+    }
+    auto left = Utils::GetSlot(true);
+
+    RE::ActorEquipManager::GetSingleton()->EquipObject(actor, obj, nullptr, 1, left, false, true, false, true);
 }

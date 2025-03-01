@@ -3,6 +3,13 @@
 struct ScrollLevel {
     uint32_t TimesSuccessfulyCast;
 };
+struct HandBook {
+    std::string weaponEditorId;
+    RE::TESObjectWEAP* weapon = nullptr;
+
+    RE::TESObjectWEAP* GetWeapon();
+    void Equip(RE::Actor* actor);
+};
 class ScrollManager {
 
     static inline std::map<std::string, std::string> replaceModels = {
@@ -13,7 +20,14 @@ class ScrollManager {
         {"Clutter\\Books\\SpellTomeIllusionLowPoly.nif", "Books Of Power\\SpellTomeIllusionLowPoly.nif"},
     };
 
-    static inline RE::TESObjectWEAP* spellBook = nullptr;
+    static inline std::map<RE::ActorValue, HandBook*> handBooks = {
+        {RE::ActorValue::kIllusion, new HandBook("BOP_IllusionSpellBook")},
+        {RE::ActorValue::kRestoration, new HandBook("BOP_RestorationSpellBook")},
+        {RE::ActorValue::kDestruction, new HandBook("BOP_DestructionSpellBook")},
+        {RE::ActorValue::kAlteration, new HandBook("BOP_AlterationSpellBook")},
+        {RE::ActorValue::kConjuration, new HandBook("BOP_ConjurationSpellBook")},
+    };
+
     static inline RE::BGSKeyword* keyword = nullptr;
     static inline bool DefaultBehavior = false;
     static void ReplaceSpellTome(RE::TESObjectBOOK* book);

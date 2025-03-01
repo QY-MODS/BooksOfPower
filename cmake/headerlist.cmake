@@ -8,4 +8,5 @@ set(headers ${headers}
 	include/ScrollManager.h
 	include/Persistence.h
 	include/Serializer.h
+	include/Utils.h
 )
