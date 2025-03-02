@@ -80,7 +80,7 @@ ScrollLevel* ScrollManager::GetScrollLevel(RE::SpellItem* scroll) {
         return scrollLevels.front();
     }
     for (auto scrollLevel : scrollLevels) {
-        if (scrollLevel->casts >= level->casts) {
+        if (scrollLevel->casts > level->casts) {
             return last;
         }
         last = scrollLevel;
