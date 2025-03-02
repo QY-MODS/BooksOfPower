@@ -14,11 +14,13 @@ void ScrollManager::ReplaceSpellTome(RE::TESObjectBOOK* book) {
     auto value = book->GetGoldValue();
     auto weight = book->GetWeight();
 
-    book->SetFormID(0, false);
 
     auto df = Utils::CreateFormByType(RE::FormType::Scroll);
     if (df) {
         if (auto newBook = df->As<RE::ScrollItem>()) {
+
+            newBook->CopyMagicItemData(spell);
+
             for (auto effect : spell->effects) {
                 auto copy = new RE::Effect();
                 copy->effectItem = effect->effectItem;
@@ -32,8 +34,6 @@ void ScrollManager::ReplaceSpellTome(RE::TESObjectBOOK* book) {
             for (auto key : book->GetKeywords()) {
                 newBook->AddKeyword(key);
             }
-            newBook->SpellItem::data = spell->data;
-            //newBook->SpellItem::equipSlot = spell->equipSlot;
 
             newBook->AddKeyword(keyword);
             auto it = replaceModels.find(model);
@@ -42,13 +42,16 @@ void ScrollManager::ReplaceSpellTome(RE::TESObjectBOOK* book) {
             } else {
                 newBook->SetModel(model);
             }
-            logger::trace("{}", model);
             newBook->weight = weight;
             newBook->value = value;
             newBook->SetFullName(name);
-            newBook->CopyMagicItemData(spell);
-            newBook->SetFormID(id, false);
+
+            newBook->SpellItem::data = spell->data;
+            newBook->SpellItem::hostileCount = spell->hostileCount;
+            newBook->SpellItem::avEffectSetting = spell->avEffectSetting;
+
             skills[newBook] = spell->GetAssociatedSkill();
+            newBook->SetFormID(id, false);
 
         }
     }

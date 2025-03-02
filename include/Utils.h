@@ -8,6 +8,12 @@ namespace Utils {
         // TODO: Null check?
         return slot->As<RE::BGSEquipSlot>();
     }
+    inline RE::BGSEquipSlot* GetEitherHandSlot() {
+        auto dom = RE::BGSDefaultObjectManager::GetSingleton();
+        auto slot = dom->GetObject(RE::DEFAULT_OBJECT::kEitherHandEquip);
+        // TODO: Null check?
+        return slot->As<RE::BGSEquipSlot>();
+    }
 
     inline RE::TESForm* CreateFormByType(RE::FormType type) {
         using func_t = RE::TESForm*(RE::FormType);
