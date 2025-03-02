@@ -33,6 +33,8 @@ void ScrollManager::ReplaceSpellTome(RE::TESObjectBOOK* book) {
                 newBook->AddKeyword(key);
             }
             newBook->SpellItem::data = spell->data;
+            //newBook->SpellItem::equipSlot = spell->equipSlot;
+
             newBook->AddKeyword(keyword);
             auto it = replaceModels.find(model);
             if (it != replaceModels.end()) {
@@ -162,6 +164,10 @@ bool ScrollManager::OnUnEquip(RE::Actor* player, RE::TESBoundObject* a_object, R
         }
     }
     return true;
+}
+
+void ScrollManager::OnCast(RE::Actor* caster, RE::SpellItem* spell) {
+    logger::trace("Caster {} cast {}", caster->GetName(), spell->GetName());
 }
 
 RE::TESObjectWEAP* HandBook::GetWeapon() {

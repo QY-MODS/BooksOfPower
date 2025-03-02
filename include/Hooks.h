@@ -12,6 +12,14 @@ namespace Hooks {
         static void Install();
     };
 
+    class SpellCastEvent : public RE::BSTEventSink<RE::TESSpellCastEvent> {
+        RE::BSEventNotifyControl ProcessEvent(const RE::TESSpellCastEvent* event,
+                                              RE::BSTEventSource<RE::TESSpellCastEvent>*);
+
+    public:
+        static void Install();
+    };
+
     struct GetCastingTypeHook {
         static inline REL::Relocation<RE::MagicSystem::CastingType(RE::ScrollItem*)> originalFunction;
         static RE::MagicSystem::CastingType GetCastingType(RE::ScrollItem* ref);

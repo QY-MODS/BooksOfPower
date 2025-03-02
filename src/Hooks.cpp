@@ -141,4 +141,31 @@ void Hooks::Install() {
     UnEquipObjectPCHook::Install();
     EquipSpellHook::Install();
     GetChargeTimeHook::Install();
+    SpellCastEvent::Install();
+}
+
+RE::BSEventNotifyControl Hooks::SpellCastEvent::ProcessEvent(const RE::TESSpellCastEvent* event,
+                                                             RE::BSTEventSource<RE::TESSpellCastEvent>*) {
+
+    if (!event) {
+        return RE::BSEventNotifyControl::kContinue;
+    }
+
+    if (auto obj = event->object) {
+        if (auto form = obj.get()) {
+            if (auto actor = form->As<RE::Actor>()) {
+                if (auto spell = RE::TESForm::LookupByID<RE::SpellItem>(event->spell)) {
+                    if (actor->IsPlayerRef()) {
+                        ScrollManager::OnCast(actor, spell);
+                    }
+                }
+            }
+        }
+    }
+
+    return RE::BSEventNotifyControl::kContinue;
+}
+
+void Hooks::SpellCastEvent::Install() {
+    RE::ScriptEventSourceHolder::GetSingleton()->AddEventSink(new SpellCastEvent());
 }
