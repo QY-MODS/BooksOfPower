@@ -8,6 +8,7 @@ struct HandBook {
     RE::TESObjectWEAP* GetWeapon();
     void Equip(RE::Actor* actor);
 };
+
 struct PlayerLevel {
     uint32_t level;
     float lastLevelUp = 0;
@@ -17,10 +18,15 @@ struct PlayerLevel {
     }
 };
 
-using actorValueMap = std::map<RE::ScrollItem*, RE::ActorValue>;
+struct ScrollData {
+    RE::SpellItem* BaseSpell;
+};
+
 using replaceModelMap = std::map<std::string, std::string>;
 using handBooksMap = std::map<RE::ActorValue, HandBook*>;
+using scrollDataMap = std::map<RE::SpellItem*, ScrollData*>;
 using playerSkillMap = std::map<RE::SpellItem*, PlayerLevel>;
+
 class ScrollManager {
 
     static inline replaceModelMap replaceModels = {
@@ -39,14 +45,14 @@ class ScrollManager {
         {RE::ActorValue::kConjuration, new HandBook("BOP_ConjurationSpellBook")},
     };
 
-    static inline actorValueMap skillActorValues;
+    static inline scrollDataMap scrollData;
+    static inline playerSkillMap playerSkill;
 
     static inline RE::BGSKeyword* keyword = nullptr;
     static inline bool DefaultBehavior = false;
     static void ReplaceSpellTome(RE::TESObjectBOOK* book);
-    static RE::ActorValue GetSkill(RE::ScrollItem* item);
+    static ScrollData* GetScrollData(RE::ScrollItem* item);
 
-    static inline playerSkillMap playerSkill;
 
 public:
     static playerSkillMap& GetTimesCastMap();

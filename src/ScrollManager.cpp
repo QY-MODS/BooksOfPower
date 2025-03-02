@@ -50,19 +50,19 @@ void ScrollManager::ReplaceSpellTome(RE::TESObjectBOOK* book) {
             newBook->SpellItem::hostileCount = spell->hostileCount;
             newBook->SpellItem::avEffectSetting = spell->avEffectSetting;
 
-            skillActorValues[newBook] = spell->GetAssociatedSkill();
+            scrollData[newBook] = new ScrollData(spell);
             newBook->SetFormID(id, false);
 
         }
     }
 }
 
-RE::ActorValue ScrollManager::GetSkill(RE::ScrollItem* item) { 
-    auto it = skillActorValues.find(item);
-    if (it != skillActorValues.end()) {
+ScrollData* ScrollManager::GetScrollData(RE::ScrollItem* item) { 
+    auto it = scrollData.find(item);
+    if (it != scrollData.end()) {
         return it->second;
     }
-    return RE::ActorValue::kDestruction;
+    return nullptr;
 }
 
 playerSkillMap& ScrollManager::GetTimesCastMap() {
@@ -154,9 +154,12 @@ bool ScrollManager::OnEquip(RE::Actor* player, RE::TESBoundObject* a_object, RE:
         *a_slot = right;
         if (auto scroll = a_object->As<RE::ScrollItem>()) {
 
-            auto it = handBooks.find(GetSkill(scroll));
-            if (it != handBooks.end()) {
-                it->second->Equip(player);
+            auto data = GetScrollData(scroll);
+            if (data) {
+                auto it = handBooks.find(data->BaseSpell->GetAssociatedSkill());
+                if (it != handBooks.end()) {
+                    it->second->Equip(player);
+                }
             }
         }
     }
