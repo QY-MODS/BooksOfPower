@@ -1,31 +1,6 @@
 #include "Hooks.h"
 #include "ScrollManager.h"
 
-// void Hooks::GetActorValueForCost::Install() {
-//     SKSE::AllocTrampoline(14);
-//     auto& trampoline = SKSE::GetTrampoline();
-//     originalFunction = trampoline.write_call<5>(REL::RelocationID(33362, 34143).address() + REL::Relocate(0x151,
-//     0x151),
-//                                                 thunk);  // Drain
-//     trampoline.write_call<5>(REL::RelocationID(33359, 34140).address() + REL::Relocate(0x4c, 0x4d),
-//                              thunk);  // Cancel  cast
-//     trampoline.write_call<5>(REL::RelocationID(33364, 34145).address() + REL::Relocate(0xc1, 0xbe), thunk);  // Can
-//     cast
-// }
-//
-// RE::ActorValue Hooks::GetActorValueForCost::thunk(RE::MagicItem* magicItem, bool rightHand) {
-//
-//     auto av = originalFunction(magicItem, rightHand);
-//
-//     logger::trace("{}", av);
-//
-//     return RE::ActorValue::kMagicka;
-// }
-
-
-
-
-
 RE::MagicSystem::SpellType Hooks::ScrollSpellTypeHook::GetSpellType(RE::ScrollItem* ref) {
     auto result = originalFunction(ref);
 
@@ -46,8 +21,6 @@ void Hooks::EquipObjectHook::Install() {
     originalFunction = trampoline.write_call<5>(REL::RelocationID(37951, 38907).address() + REL::Relocate(0x2e0, 0x2e0), thunk);
 }
 
-
-
 void Hooks::EquipObjectHook::thunk(RE::ActorEquipManager* a_manager, RE::Actor* a_actor, RE::TESBoundObject* a_object,
                                    RE::ExtraDataList* a_extraData, std::uint32_t a_count,
                                    RE::BGSEquipSlot* a_slot, bool a_queueEquip, bool a_forceEquip,
@@ -57,8 +30,6 @@ void Hooks::EquipObjectHook::thunk(RE::ActorEquipManager* a_manager, RE::Actor* 
         originalFunction(a_manager, a_actor, a_object, a_extraData, a_count, a_slot, a_queueEquip, a_forceEquip,
                          a_playSounds, a_applyNow);
     }
-
-
 }
 
 void Hooks::UnEquipObjectPCHook::Install() {
@@ -79,9 +50,6 @@ void Hooks::UnEquipObjectPCHook::thunk(RE::ActorEquipManager* a_manager, RE::Act
                             a_playSounds, a_applyNow, a_slotToReplace);
     }
 }
-
-
-
 
 void Hooks::EquipSpellHook::thunk(RE::ActorEquipManager* a_manager, RE::Actor* a_actor, RE::SpellItem* a_spell,
                                   RE::BGSEquipSlot** a_slot_ptr) {
@@ -120,29 +88,13 @@ void Hooks::GetCastingTypeHook::Install() {
     originalFunction = REL::Relocation<std::uintptr_t>(RE::ScrollItem::VTABLE[0]).write_vfunc(0x55, GetCastingType);
 }
 
-float Hooks::GetChargeTimeHook::GetChargeTime(RE::ScrollItem* ref) { 
-    if (ref && ref->HasKeywordByEditorID("BOP_ChannelingTome")) {
-        return originalFunction(ref);//*10
-    }
-    return originalFunction(ref);
-}
-
-void Hooks::GetChargeTimeHook::Install() {
-    originalFunction = REL::Relocation<std::uintptr_t>(RE::ScrollItem::VTABLE[0]).write_vfunc(0x64, GetChargeTime);
-}
-
-
-
 void Hooks::Install() {
-    // GetActorValueForCost::Install();
     ScrollSpellTypeHook::Install();
     GetCastingTypeHook::Install();
     EquipObjectHook::Install();
     UnEquipObjectPCHook::Install();
     EquipSpellHook::Install();
-    GetChargeTimeHook::Install();
     SpellCastEvent::Install();
-    HitEvent::Install();
 }
 
 RE::BSEventNotifyControl Hooks::SpellCastEvent::ProcessEvent(const RE::TESSpellCastEvent* event,
@@ -157,7 +109,7 @@ RE::BSEventNotifyControl Hooks::SpellCastEvent::ProcessEvent(const RE::TESSpellC
             if (auto actor = form->As<RE::Actor>()) {
                 if (actor->IsPlayerRef()) {
                     if (auto spell = RE::TESForm::LookupByID<RE::SpellItem>(event->spell)) {
-                            ScrollManager::OnCast(actor, spell);
+                        ScrollManager::OnCast(actor, spell);
                     }
                 }
             }
@@ -169,38 +121,4 @@ RE::BSEventNotifyControl Hooks::SpellCastEvent::ProcessEvent(const RE::TESSpellC
 
 void Hooks::SpellCastEvent::Install() {
     RE::ScriptEventSourceHolder::GetSingleton()->AddEventSink(new SpellCastEvent());
-}
-
-RE::BSEventNotifyControl Hooks::HitEvent::ProcessEvent(const RE::TESHitEvent* event,
-                                                       RE::BSTEventSource<RE::TESHitEvent>*) {
-
-    if (!event) {
-        return RE::BSEventNotifyControl::kContinue;
-    }
-
-    if (event->cause) {
-        if (auto caster = event->cause.get()) {
-            if (auto actor = caster->As<RE::Actor>()) {
-                if (actor->IsPlayerRef()) {
-                    if (event->target) {
-                        if (auto target = event->target.get()) {
-                            if (target->As<RE::Actor>()) {
-                                if (auto spell = RE::TESForm::LookupByID<RE::SpellItem>(event->source)) {
-                                    ScrollManager::OnHit(actor, spell);
-                                }
-                            } 
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-
-
-    return RE::BSEventNotifyControl::kContinue;
-}
-
-void Hooks::HitEvent::Install() {
-    RE::ScriptEventSourceHolder::GetSingleton()->AddEventSink(new HitEvent());
 }

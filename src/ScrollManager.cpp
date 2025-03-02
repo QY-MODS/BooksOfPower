@@ -480,19 +480,8 @@ bool ScrollManager::OnUnEquip(RE::Actor* player, RE::TESBoundObject* a_object, R
 }
 
 void ScrollManager::OnCast(RE::Actor* caster, RE::SpellItem* spell) {
-    if (spell->GetDelivery() == RE::MagicSystem::Delivery::kSelf) {
-        if (spell->HasKeywordByEditorID("BOP_ChannelingTome")) {
-            HandleLevelUp(spell);
-        }
-    }
-
-}
-
-void ScrollManager::OnHit(RE::Actor* caster, RE::SpellItem* spell) {
-    if (spell->GetDelivery() != RE::MagicSystem::Delivery::kSelf) {
-        if (spell->HasKeywordByEditorID("BOP_ChannelingTome")) {
-            HandleLevelUp(spell);
-        }
+    if (spell->HasKeywordByEditorID("BOP_ChannelingTome")) {
+        HandleLevelUp(spell);
     }
 }
 

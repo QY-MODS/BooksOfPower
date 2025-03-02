@@ -69,5 +69,4 @@ public:
     static bool OnEquip(RE::Actor* player, RE::TESBoundObject* a_object, RE::BGSEquipSlot** a_slot);
     static bool OnUnEquip(RE::Actor* player, RE::TESBoundObject* a_object, RE::BGSEquipSlot* a_slot);
     static void OnCast(RE::Actor* caster, RE::SpellItem* spell);
-    static void OnHit(RE::Actor* caster, RE::SpellItem* spell);
 };
