@@ -20,14 +20,31 @@ struct PlayerLevel {
 
 struct ScrollData {
     RE::SpellItem* BaseSpell;
+    RE::SpellItem* Scroll;
+};
+
+struct ScrollLevel {
+    uint32_t level;
+    float magnitudePercentage;
+    float durationPercentage;
+    float costPercentage;
 };
 
 using replaceModelMap = std::map<std::string, std::string>;
 using handBooksMap = std::map<RE::ActorValue, HandBook*>;
 using scrollDataMap = std::map<RE::SpellItem*, ScrollData*>;
-using playerSkillMap = std::map<RE::SpellItem*, PlayerLevel>;
+using playerSkillMap = std::map<RE::SpellItem*, PlayerLevel*>;
+using scrollLevelVector = std::vector<ScrollLevel*>;
 
 class ScrollManager {
+
+
+    static inline scrollLevelVector scrollLevels = {
+        new ScrollLevel(0, 50, 50, 130),
+        new ScrollLevel(3, 80, 80, 120),
+        new ScrollLevel(7, 90, 90, 110),
+        new ScrollLevel(10, 10, 10, 100),
+    };
 
     static inline replaceModelMap replaceModels = {
         {"Clutter\\Books\\SpellTomeAlterationLowPoly.nif", "Books Of Power\\SpellTomeAlterationLowPoly.nif"},
@@ -51,8 +68,10 @@ class ScrollManager {
     static inline RE::BGSKeyword* keyword = nullptr;
     static inline bool DefaultBehavior = false;
     static void ReplaceSpellTome(RE::TESObjectBOOK* book);
-    static ScrollData* GetScrollData(RE::ScrollItem* item);
-
+    static ScrollData* GetScrollData(RE::SpellItem* item);
+    static PlayerLevel* GetPlayerSkill(RE::SpellItem* item);
+    static ScrollLevel* GetScrollLevel(PlayerLevel* level);
+    static void ApplyLevel(RE::SpellItem* scroll);
 
 public:
     static playerSkillMap& GetTimesCastMap();

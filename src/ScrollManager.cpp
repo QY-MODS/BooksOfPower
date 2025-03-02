@@ -50,19 +50,60 @@ void ScrollManager::ReplaceSpellTome(RE::TESObjectBOOK* book) {
             newBook->SpellItem::hostileCount = spell->hostileCount;
             newBook->SpellItem::avEffectSetting = spell->avEffectSetting;
 
-            scrollData[newBook] = new ScrollData(spell);
+            scrollData[newBook] = new ScrollData(spell, newBook);
             newBook->SetFormID(id, false);
 
         }
     }
 }
 
-ScrollData* ScrollManager::GetScrollData(RE::ScrollItem* item) { 
+ScrollData* ScrollManager::GetScrollData(RE::SpellItem* item) { 
     auto it = scrollData.find(item);
     if (it != scrollData.end()) {
         return it->second;
     }
     return nullptr;
+}
+
+PlayerLevel* ScrollManager::GetPlayerSkill(RE::SpellItem* item) {
+    auto it = playerSkill.find(item);
+    if (it != playerSkill.end()) {
+        return it->second;
+    }
+    return nullptr;
+}
+
+ScrollLevel* ScrollManager::GetScrollLevel(PlayerLevel* level) { 
+    ScrollLevel* last = nullptr;
+    for (auto scrollLevel : scrollLevels) {
+        if (scrollLevel->level >= level->level) {
+            return last;
+        }
+        last = scrollLevel;
+    }
+    return nullptr;
+}
+
+void ScrollManager::ApplyLevel(RE::SpellItem* scroll) {
+    auto data = GetScrollData(scroll);
+    auto skill = GetPlayerSkill(scroll);
+    if (data && skill) {
+        auto level = GetScrollLevel(skill);
+        if (level) {
+            auto base = data->BaseSpell;
+            auto scroll = data->Scroll;
+            scroll->data.costOverride = base->data.costOverride * level->costPercentage / 100;
+            if (base->effects.size() == scroll->effects.size()) {
+                for (auto i = 0; i < base->effects.size(); i++) {
+                    scroll->effects[i]->effectItem.magnitude = base->effects[i]->effectItem.magnitude*level->magnitudePercentage/100;
+                    scroll->effects[i]->effectItem.duration = base->effects[i]->effectItem.duration*level->durationPercentage/100;
+                    scroll->effects[i]->cost = base->effects[i]->cost *level->costPercentage/100;
+                }
+            }
+        } else {
+            RE::PlayerCharacter::GetSingleton()->AddSpell(data->BaseSpell);
+        }
+    }
 }
 
 playerSkillMap& ScrollManager::GetTimesCastMap() {
@@ -71,19 +112,27 @@ playerSkillMap& ScrollManager::GetTimesCastMap() {
 
 void ScrollManager::SaveGame(Serializer* serializer) {
     serializer->Write<uint32_t>(playerSkill.size());
-    for (auto& [key, value] : playerSkill) {
+    for (auto [key, value] : playerSkill) {
         serializer->WriteForm(key);
-        serializer->Write<uint32_t>(value.level);
+        serializer->Write<uint32_t>(value->level);
     }
 }
 
 void ScrollManager::LoadGame(Serializer* serializer) {
     auto length = serializer->Read<uint32_t>();
+
+    for (auto [key, value] : playerSkill) {
+        delete value;
+    }
+
     playerSkill.clear();
-    for (uint32_t i = 0; i < length; i++) {
+
+    for (uint32_t i = 0; i < length; i++) 
+    {
         auto form = serializer->ReadForm<RE::SpellItem>();
         auto level = serializer->Read<uint32_t>();
-        playerSkill[form].level = level;
+        playerSkill[form] = new PlayerLevel(level);
+        ApplyLevel(form);
     }
 }
 
@@ -198,9 +247,15 @@ void ScrollManager::OnCast(RE::Actor* caster, RE::SpellItem* spell) {
     if (spell->GetDelivery() == RE::MagicSystem::Delivery::kSelf) {
         if (spell->HasKeywordByEditorID("BOP_ChannelingTome")) {
             auto now = RE::Calendar::GetSingleton()->GetHoursPassed();
-            if (playerSkill[spell].CanLevelUp()) {
-                playerSkill[spell].level++;
-                playerSkill[spell].lastLevelUp=now;
+
+            if (playerSkill.find(spell) == playerSkill.end()) {
+                playerSkill[spell] = new PlayerLevel(0);
+            }
+
+            if (playerSkill[spell]->CanLevelUp()) {
+                playerSkill[spell]->level++;
+                playerSkill[spell]->lastLevelUp = now;
+                ApplyLevel(spell);
             }
         }
     }
@@ -210,9 +265,15 @@ void ScrollManager::OnCast(RE::Actor* caster, RE::SpellItem* spell) {
 void ScrollManager::OnHit(RE::Actor* caster, RE::SpellItem* spell) {
     if (spell->HasKeywordByEditorID("BOP_ChannelingTome")) {
         auto now = RE::Calendar::GetSingleton()->GetHoursPassed();
-        if (playerSkill[spell].CanLevelUp()) {
-            playerSkill[spell].level++;
-            playerSkill[spell].lastLevelUp = now;
+
+        if (playerSkill.find(spell) == playerSkill.end()) {
+            playerSkill[spell] = new PlayerLevel(0);
+        }
+
+        if (playerSkill[spell]->CanLevelUp()) {
+            playerSkill[spell]->level++;
+            playerSkill[spell]->lastLevelUp = now;
+            ApplyLevel(spell);
         }
     }
 }
