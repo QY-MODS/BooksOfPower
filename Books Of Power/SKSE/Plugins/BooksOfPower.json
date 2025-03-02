@@ -68,7 +68,7 @@
       "To": "Books Of Power\\SpellTomeIllusionLowPoly.nif"
     }
   ],
-  "HandBookModels": [
+  "HandBookDisplayItems": [
     {
       "ActorValue": "Illusion",
       "BookEditorId": "BOP_IllusionSpellBook"

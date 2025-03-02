@@ -205,24 +205,24 @@ void ScrollManager::ReadConfigFile() {
                 castTimeCooldown = data["CastTimeCooldown"].get<float>();
                 logger::info("Set cast time cooldown as {}", castTimeCooldown);
             } else {
-                logger::error("HandBookModels must be a number");
+                logger::error("CastTimeCooldown must be a number");
             }
         }
         else {
             logger::error("Missing CastTimeCooldown");
         }
-        logger::info("Reading: HandBookModels");
+        logger::info("Reading: HandBookDisplayItems");
 
-        if (data.contains("HandBookModels")) {
-            if (data["HandBookModels"].is_array()) {
-                for (auto item : data["HandBookModels"]) {
+        if (data.contains("HandBookDisplayItems")) {
+            if (data["HandBookDisplayItems"].is_array()) {
+                for (auto item : data["HandBookDisplayItems"]) {
                     if (item.contains("ActorValue") && item.contains("BookEditorId")) {
                         if (item["ActorValue"].is_string() && item["BookEditorId"].is_string()) {
                             auto avString = item["ActorValue"].get<std::string>();
                             auto editorId = item["BookEditorId"].get<std::string>();
                             auto av = Utils::ActorValueFromString(avString);
                             handBooks[av] = new HandBook(editorId);
-                            logger::info("Registered HandBookModels BookEditorId: {} ActorValue: {}", editorId, av);
+                            logger::info("Registered HandBookDisplayItems BookEditorId: {} ActorValue: {}", editorId, av);
                         } else {
                             logger::error("ActorValue and BookEditorId must be string");
                         }
@@ -231,10 +231,10 @@ void ScrollManager::ReadConfigFile() {
                     }
                 }
             } else {
-                logger::error("HandBookModels must be an array");
+                logger::error("HandBookDisplayItems must be an array");
             }
         } else {
-            logger::error("Missing HandBookModels");
+            logger::error("Missing HandBookDisplayItems");
         }
 
         logger::info("Reading: BookModelSwap");
