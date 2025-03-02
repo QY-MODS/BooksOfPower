@@ -21,6 +21,17 @@ void ScrollManager::ReplaceSpellTome(RE::TESObjectBOOK* book) {
     if (df) {
         if (auto newBook = df->As<RE::ScrollItem>()) {
 
+            auto effectLevel = new RE::Effect();
+            effectLevel->baseEffect = levelEffect;
+            effectLevel->cost = 0;
+
+            auto effectCost = new RE::Effect();
+            effectCost->cost = 0;
+            effectCost->baseEffect = spell->GetCastingType() == RE::MagicSystem::CastingType::kConcentration ? costPerSecoundEffect : costEffect;
+
+            newBook->effects.push_back(effectLevel);
+            newBook->effects.push_back(effectCost);
+
             newBook->CopyMagicItemData(spell);
 
             for (auto effect : spell->effects) {
@@ -33,6 +44,9 @@ void ScrollManager::ReplaceSpellTome(RE::TESObjectBOOK* book) {
 
                 newBook->effects.push_back(copy);
             }
+
+
+
             for (auto key : book->GetKeywords()) {
                 newBook->AddKeyword(key);
             }
@@ -55,6 +69,11 @@ void ScrollManager::ReplaceSpellTome(RE::TESObjectBOOK* book) {
             scrollData[newBook] = new ScrollData(spell, newBook);
             newBook->SetFormID(id, false);
             ApplyLevel(newBook);
+
+
+            effectLevel->effectItem.magnitude = 1;
+
+            effectCost->effectItem.magnitude = newBook->CalculateMagickaCost(RE::PlayerCharacter::GetSingleton());
         }
     }
 }
@@ -98,11 +117,21 @@ void ScrollManager::ApplyLevel(RE::SpellItem* scroll) {
             auto base = data->BaseSpell;
             auto scroll = data->Scroll;
             scroll->data.costOverride = base->data.costOverride * level->costPercentage / 100;
-            if (base->effects.size() == scroll->effects.size()) {
-                for (auto i = 0; i < base->effects.size(); i++) {
-                    scroll->effects[i]->effectItem.magnitude = base->effects[i]->effectItem.magnitude*level->magnitudePercentage/100;
-                    scroll->effects[i]->effectItem.duration = base->effects[i]->effectItem.duration*level->durationPercentage/100;
-                    scroll->effects[i]->cost = base->effects[i]->cost *level->costPercentage/100;
+            for (auto i = 0; i < scroll->effects.size(); i++) {
+                if (i < 2) {
+                    if (scroll->effects[i]->baseEffect == costPerSecoundEffect ||
+                        scroll->effects[i]->baseEffect == costEffect) {
+                        scroll->effects[i]->effectItem.magnitude =
+                            scroll->CalculateMagickaCost(RE::PlayerCharacter::GetSingleton());
+                    } else if (scroll->effects[i]->baseEffect == levelEffect) {
+                        scroll->effects[i]->effectItem.magnitude = level->level;
+                    }
+                } else {
+                    if (i-2 < base->effects.size()) {
+                        scroll->effects[i]->effectItem.magnitude = base->effects[i - 2]->effectItem.magnitude * level->magnitudePercentage / 100;
+                        scroll->effects[i]->effectItem.duration = base->effects[i - 2]->effectItem.duration * level->durationPercentage / 100;
+                        scroll->effects[i]->cost = base->effects[i - 2]->cost * level->costPercentage / 100;
+                    } 
                 }
             }
         } else {
@@ -332,6 +361,9 @@ void ScrollManager::DataLoaded() {
     ReadConfigFile();
 
     keyword = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("BOP_ChannelingTome");
+    costEffect = RE::TESForm::LookupByEditorID<RE::EffectSetting>("BOP_MagickaCostDisplay");
+    costPerSecoundEffect = RE::TESForm::LookupByEditorID<RE::EffectSetting>("BOP_MagickaCostDisplayPerSecond");
+    levelEffect = RE::TESForm::LookupByEditorID<RE::EffectSetting>("BOP_LevelDisplay");
 
 
     const auto& [map, lock] = RE::TESForm::GetAllForms();
@@ -444,8 +476,10 @@ void ScrollManager::OnCast(RE::Actor* caster, RE::SpellItem* spell) {
 }
 
 void ScrollManager::OnHit(RE::Actor* caster, RE::SpellItem* spell) {
-    if (spell->HasKeywordByEditorID("BOP_ChannelingTome")) {
-        HandleLevelUp(spell);
+    if (spell->GetDelivery() != RE::MagicSystem::Delivery::kSelf) {
+        if (spell->HasKeywordByEditorID("BOP_ChannelingTome")) {
+            HandleLevelUp(spell);
+        }
     }
 }
 

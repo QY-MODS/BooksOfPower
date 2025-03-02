@@ -48,6 +48,9 @@ class ScrollManager {
     static inline playerSkillMap playerSkill;
 
     static inline RE::BGSKeyword* keyword = nullptr;
+    static inline RE::EffectSetting* costEffect = nullptr;
+    static inline RE::EffectSetting* costPerSecoundEffect = nullptr;
+    static inline RE::EffectSetting* levelEffect = nullptr;
     static inline bool DefaultBehavior = false;
     static void ReplaceSpellTome(RE::TESObjectBOOK* book);
     static ScrollData* GetScrollData(RE::SpellItem* item);
