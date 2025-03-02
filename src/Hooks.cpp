@@ -142,6 +142,7 @@ void Hooks::Install() {
     EquipSpellHook::Install();
     GetChargeTimeHook::Install();
     SpellCastEvent::Install();
+    HitEvent::Install();
 }
 
 RE::BSEventNotifyControl Hooks::SpellCastEvent::ProcessEvent(const RE::TESSpellCastEvent* event,
@@ -154,9 +155,9 @@ RE::BSEventNotifyControl Hooks::SpellCastEvent::ProcessEvent(const RE::TESSpellC
     if (auto obj = event->object) {
         if (auto form = obj.get()) {
             if (auto actor = form->As<RE::Actor>()) {
-                if (auto spell = RE::TESForm::LookupByID<RE::SpellItem>(event->spell)) {
-                    if (actor->IsPlayerRef()) {
-                        ScrollManager::OnCast(actor, spell);
+                if (actor->IsPlayerRef()) {
+                    if (auto spell = RE::TESForm::LookupByID<RE::SpellItem>(event->spell)) {
+                            ScrollManager::OnCast(actor, spell);
                     }
                 }
             }
@@ -168,4 +169,33 @@ RE::BSEventNotifyControl Hooks::SpellCastEvent::ProcessEvent(const RE::TESSpellC
 
 void Hooks::SpellCastEvent::Install() {
     RE::ScriptEventSourceHolder::GetSingleton()->AddEventSink(new SpellCastEvent());
+}
+
+RE::BSEventNotifyControl Hooks::HitEvent::ProcessEvent(const RE::TESHitEvent* event,
+                                                       RE::BSTEventSource<RE::TESHitEvent>*) {
+
+    if (!event) {
+        return RE::BSEventNotifyControl::kContinue;
+    }
+
+    if (event->cause) {
+        if (auto caster = event->cause.get()) {
+            if (auto actor = caster->As<RE::Actor>()) {
+                if (actor->IsPlayerRef()) {
+                    if (auto spell = RE::TESForm::LookupByID<RE::SpellItem>(event->source)) {
+                        ScrollManager::OnHit(actor, spell);
+                    }
+                }
+            }
+        }
+    }
+
+    logger::trace("source: {:x}", event->source);
+    logger::trace("projectile: {:x}", event->projectile);
+
+    return RE::BSEventNotifyControl::kContinue;
+}
+
+void Hooks::HitEvent::Install() {
+    RE::ScriptEventSourceHolder::GetSingleton()->AddEventSink(new HitEvent());
 }

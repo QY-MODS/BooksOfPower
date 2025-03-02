@@ -1,8 +1,10 @@
 #pragma once
 #include "Serializer.h"
+
 struct ScrollLevel {
     uint32_t TimesSuccessfulyCast;
 };
+
 struct HandBook {
     std::string weaponEditorId;
     RE::TESObjectWEAP* weapon = nullptr;
@@ -28,7 +30,7 @@ class ScrollManager {
         {RE::ActorValue::kConjuration, new HandBook("BOP_ConjurationSpellBook")},
     };
 
-    static inline std::map<RE::ScrollItem*, RE::ActorValue> skills;
+    static inline std::map<RE::ScrollItem*, RE::ActorValue> skillActorValues;
 
     static inline RE::BGSKeyword* keyword = nullptr;
     static inline bool DefaultBehavior = false;
@@ -42,4 +44,5 @@ public:
     static bool OnEquip(RE::Actor* player, RE::TESBoundObject* a_object, RE::BGSEquipSlot** a_slot);
     static bool OnUnEquip(RE::Actor* player, RE::TESBoundObject* a_object, RE::BGSEquipSlot* a_slot);
     static void OnCast(RE::Actor* caster, RE::SpellItem* spell);
+    static void OnHit(RE::Actor* caster, RE::SpellItem* spell);
 };

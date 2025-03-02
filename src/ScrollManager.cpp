@@ -50,7 +50,7 @@ void ScrollManager::ReplaceSpellTome(RE::TESObjectBOOK* book) {
             newBook->SpellItem::hostileCount = spell->hostileCount;
             newBook->SpellItem::avEffectSetting = spell->avEffectSetting;
 
-            skills[newBook] = spell->GetAssociatedSkill();
+            skillActorValues[newBook] = spell->GetAssociatedSkill();
             newBook->SetFormID(id, false);
 
         }
@@ -58,8 +58,8 @@ void ScrollManager::ReplaceSpellTome(RE::TESObjectBOOK* book) {
 }
 
 RE::ActorValue ScrollManager::GetSkill(RE::ScrollItem* item) { 
-    auto it = skills.find(item);
-    if (it != skills.end()) {
+    auto it = skillActorValues.find(item);
+    if (it != skillActorValues.end()) {
         return it->second;
     }
     return RE::ActorValue::kDestruction;
@@ -171,6 +171,10 @@ bool ScrollManager::OnUnEquip(RE::Actor* player, RE::TESBoundObject* a_object, R
 
 void ScrollManager::OnCast(RE::Actor* caster, RE::SpellItem* spell) {
     logger::trace("Caster {} cast {}", caster->GetName(), spell->GetName());
+}
+
+void ScrollManager::OnHit(RE::Actor* caster, RE::SpellItem* spell) {
+    logger::trace("Caster {} hit {}, blocked {}", caster->GetName(), spell->GetName(), blocked ? "yes" : "no");
 }
 
 RE::TESObjectWEAP* HandBook::GetWeapon() {
