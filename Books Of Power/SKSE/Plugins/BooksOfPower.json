@@ -1,4 +1,5 @@
 {
+  "CastTimeCooldown": 0.01,
   "ScrollLevels": [
     {
       "MagnitudePercentage": 10,

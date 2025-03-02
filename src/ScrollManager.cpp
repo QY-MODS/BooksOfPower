@@ -155,8 +155,9 @@ void ScrollManager::HandleLevelUp(RE::SpellItem* spell) {
 }
 
 playerSkillMap& ScrollManager::GetTimesCastMap() {
-    return playerSkill;
-}
+    return playerSkill; }
+
+float ScrollManager::GetLevelUpCooldown() { return castTimeCooldown; }
 
 void ScrollManager::SaveGame(Serializer* serializer) {
     serializer->Write<uint32_t>(playerSkill.size());
@@ -198,9 +199,20 @@ void ScrollManager::ReadConfigFile() {
 
     try {
         const json data = json::parse(file);
-        logger::info("Missing HandBookModels");
-
+        logger::info("Reading: CastTimeCooldown");
+        if (data.contains("CastTimeCooldown")) {
+            if (data["CastTimeCooldown"].is_number()) {
+                castTimeCooldown = data["CastTimeCooldown"].get<float>();
+                logger::info("Set cast time cooldown as {}", castTimeCooldown);
+            } else {
+                logger::error("HandBookModels must be a number");
+            }
+        }
+        else {
+            logger::error("Missing CastTimeCooldown");
+        }
         logger::info("Reading: HandBookModels");
+
         if (data.contains("HandBookModels")) {
             if (data["HandBookModels"].is_array()) {
                 for (auto item : data["HandBookModels"]) {
@@ -210,7 +222,6 @@ void ScrollManager::ReadConfigFile() {
                             auto editorId = item["BookEditorId"].get<std::string>();
                             auto av = Utils::ActorValueFromString(avString);
                             handBooks[av] = new HandBook(editorId);
-
                             logger::info("Registered HandBookModels BookEditorId: {} ActorValue: {}", editorId, av);
                         } else {
                             logger::error("ActorValue and BookEditorId must be string");
@@ -463,4 +474,10 @@ void HandBook::Equip(RE::Actor* actor) {
     auto left = Utils::GetSlot(true);
 
     RE::ActorEquipManager::GetSingleton()->EquipObject(actor, obj, nullptr, 1, left, false, true, false, true);
+}
+
+bool PlayerLevel::CanLevelUp() {
+    float castTimeCooldown = ScrollManager::GetLevelUpCooldown();
+    auto now =RE::Calendar::GetSingleton()->GetHoursPassed();
+    return lastLevelUp == 0 || now - lastLevelUp > castTimeCooldown;
 }

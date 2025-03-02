@@ -3,11 +3,15 @@
 
 void UI::Register() {
 
-    if (!SKSEMenuFramework::IsInstalled()) {
-        return;
-    }
-    SKSEMenuFramework::SetSection("Template");
-    SKSEMenuFramework::AddSectionItem("Basic", Example1::Render);
+    #ifndef NDEBUG
+
+        if (!SKSEMenuFramework::IsInstalled()) {
+            return;
+        }
+        SKSEMenuFramework::SetSection("Books Of Power");
+        SKSEMenuFramework::AddSectionItem("Debug", Example1::Render);
+
+    #endif
 }
 
 void __stdcall UI::Example1::Render() {

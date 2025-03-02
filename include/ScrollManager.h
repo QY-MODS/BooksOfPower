@@ -13,10 +13,7 @@ struct PlayerLevel {
     uint32_t casts;
     uint32_t lastLevelCasts;
     float lastLevelUp = 0;
-    bool CanLevelUp() {
-        auto now = RE::Calendar::GetSingleton()->GetHoursPassed();
-        return lastLevelUp == 0 || now - lastLevelUp > 0.01;
-    }
+    bool CanLevelUp();
 };
 
 struct ScrollData {
@@ -45,6 +42,8 @@ class ScrollManager {
     static inline replaceModelMap replaceModels;
     static inline handBooksMap handBooks;
 
+    static inline float castTimeCooldown = 0.01;
+
     static inline scrollDataMap scrollData;
     static inline playerSkillMap playerSkill;
 
@@ -60,6 +59,7 @@ class ScrollManager {
 
 public:
     static playerSkillMap& GetTimesCastMap();
+    static float GetLevelUpCooldown();
     static void SaveGame(Serializer* serializer);
     static void LoadGame(Serializer* serializer);
     static void DataLoaded();
