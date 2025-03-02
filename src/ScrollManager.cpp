@@ -65,13 +65,26 @@ RE::ActorValue ScrollManager::GetSkill(RE::ScrollItem* item) {
     return RE::ActorValue::kDestruction;
 }
 
-timesCastMap& ScrollManager::GetTimesCastMap() {
-    return timesCast;
+playerSkillMap& ScrollManager::GetTimesCastMap() {
+    return playerSkill;
 }
 
-void ScrollManager::SaveGame(Serializer* serializer) {}
+void ScrollManager::SaveGame(Serializer* serializer) {
+    serializer->Write<uint32_t>(playerSkill.size());
+    for (auto& [key, value] : playerSkill) {
+        serializer->WriteForm(key);
+        serializer->Write<uint32_t>(value.level);
+    }
+}
 
 void ScrollManager::LoadGame(Serializer* serializer) {
+    auto length = serializer->Read<uint32_t>();
+    playerSkill.clear();
+    for (uint32_t i = 0; i < length; i++) {
+        auto form = serializer->ReadForm<RE::SpellItem>();
+        auto level = serializer->Read<uint32_t>();
+        playerSkill[form].level = level;
+    }
 }
 
 void ScrollManager::DataLoaded() {
@@ -182,9 +195,9 @@ void ScrollManager::OnCast(RE::Actor* caster, RE::SpellItem* spell) {
     if (spell->GetDelivery() == RE::MagicSystem::Delivery::kSelf) {
         if (spell->HasKeywordByEditorID("BOP_ChannelingTome")) {
             auto now = RE::Calendar::GetSingleton()->GetHoursPassed();
-            if (timesCast[spell].CanLevelUp()) {
-                timesCast[spell].level++;
-                timesCast[spell].lastLevelUp=now;
+            if (playerSkill[spell].CanLevelUp()) {
+                playerSkill[spell].level++;
+                playerSkill[spell].lastLevelUp=now;
             }
         }
     }
@@ -194,9 +207,9 @@ void ScrollManager::OnCast(RE::Actor* caster, RE::SpellItem* spell) {
 void ScrollManager::OnHit(RE::Actor* caster, RE::SpellItem* spell) {
     if (spell->HasKeywordByEditorID("BOP_ChannelingTome")) {
         auto now = RE::Calendar::GetSingleton()->GetHoursPassed();
-        if (timesCast[spell].CanLevelUp()) {
-            timesCast[spell].level++;
-            timesCast[spell].lastLevelUp = now;
+        if (playerSkill[spell].CanLevelUp()) {
+            playerSkill[spell].level++;
+            playerSkill[spell].lastLevelUp = now;
         }
     }
 }

@@ -5,7 +5,6 @@
 struct HandBook {
     std::string weaponEditorId;
     RE::TESObjectWEAP* weapon = nullptr;
-
     RE::TESObjectWEAP* GetWeapon();
     void Equip(RE::Actor* actor);
 };
@@ -21,7 +20,7 @@ struct PlayerLevel {
 using actorValueMap = std::map<RE::ScrollItem*, RE::ActorValue>;
 using replaceModelMap = std::map<std::string, std::string>;
 using handBooksMap = std::map<RE::ActorValue, HandBook*>;
-using timesCastMap = std::map<RE::SpellItem*, PlayerLevel>;
+using playerSkillMap = std::map<RE::SpellItem*, PlayerLevel>;
 class ScrollManager {
 
     static inline replaceModelMap replaceModels = {
@@ -47,10 +46,10 @@ class ScrollManager {
     static void ReplaceSpellTome(RE::TESObjectBOOK* book);
     static RE::ActorValue GetSkill(RE::ScrollItem* item);
 
-    static inline timesCastMap timesCast;
+    static inline playerSkillMap playerSkill;
 
 public:
-    static timesCastMap& GetTimesCastMap();
+    static playerSkillMap& GetTimesCastMap();
     static void SaveGame(Serializer* serializer);
     static void LoadGame(Serializer* serializer);
     static void DataLoaded();

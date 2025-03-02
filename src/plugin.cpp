@@ -1,6 +1,8 @@
 #include "Plugin.h"
 #include "Hooks.h"
 #include "ScrollManager.h"
+#include "Persistence.h"
+
 void OnMessage(SKSE::MessagingInterface::Message* message) {
     if (message->type == SKSE::MessagingInterface::kDataLoaded) {
         ScrollManager::DataLoaded();
@@ -16,5 +18,6 @@ SKSEPluginLoad(const SKSE::LoadInterface *skse) {
     logger::info("Plugin loaded");
     UI::Register();
     Hooks::Install();
+    Persistence::Install();
     return true;
 }
