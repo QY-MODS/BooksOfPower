@@ -11,6 +11,7 @@ struct HandBook {
 
 struct PlayerLevel {
     uint32_t casts;
+    uint32_t lastLevelCasts;
     float lastLevelUp = 0;
     bool CanLevelUp() {
         auto now = RE::Calendar::GetSingleton()->GetHoursPassed();

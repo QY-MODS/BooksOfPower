@@ -104,7 +104,16 @@ void ScrollManager::ApplyLevel(RE::SpellItem* scroll) {
                 }
             }
         } else {
-            RE::PlayerCharacter::GetSingleton()->AddSpell(data->BaseSpell);
+            auto base = data->BaseSpell;
+            auto scroll = data->Scroll;
+            scroll->data.costOverride = base->data.costOverride;
+            if (base->effects.size() == scroll->effects.size()) {
+                for (auto i = 0; i < base->effects.size(); i++) {
+                    scroll->effects[i]->effectItem.magnitude = base->effects[i]->effectItem.magnitude;
+                    scroll->effects[i]->effectItem.duration = base->effects[i]->effectItem.duration;
+                    scroll->effects[i]->cost = base->effects[i]->cost;
+                }
+            }
         }
     }
 }
@@ -122,12 +131,23 @@ void ScrollManager::HandleLevelUp(RE::SpellItem* spell) {
         ApplyLevel(spell);
         auto data = GetScrollData(spell);
         auto level = GetScrollLevel(spell);
+        auto skill = GetPlayerSkill(spell);
         if (data) {
-            if (level) {
-                RE::DebugNotification(std::format("Your knowledge at the spell {} is at level {}", data->BaseSpell->GetName(), level->level).c_str());
-            } else {
-                RE::DebugNotification(std::format("You learned the spell {}",data->BaseSpell->GetName()).c_str());
-            }
+                if (level && skill) {
+                    if (skill->lastLevelCasts != level->casts) 
+                    {
+                        skill->lastLevelCasts = level->casts;
+                        RE::DebugNotification(std::format("Your knowledge at the spell {} is at level {}", data->BaseSpell->GetName(), level->level).c_str());
+                    }
+                } 
+                else 
+                {
+                    auto player = RE::PlayerCharacter::GetSingleton();
+                    if (!player->HasSpell(data->BaseSpell)) {
+                        player->AddSpell(data->BaseSpell);
+                        RE::DebugNotification(std::format("You mastered the spell {}",data->BaseSpell->GetName()).c_str());
+                    }
+                }
         }
     }
 }
@@ -141,6 +161,7 @@ void ScrollManager::SaveGame(Serializer* serializer) {
     for (auto [key, value] : playerSkill) {
         serializer->WriteForm(key);
         serializer->Write<uint32_t>(value->casts);
+        serializer->Write<uint32_t>(value->lastLevelCasts);
     }
 }
 
@@ -157,7 +178,8 @@ void ScrollManager::LoadGame(Serializer* serializer) {
     {
         auto form = serializer->ReadForm<RE::SpellItem>();
         auto level = serializer->Read<uint32_t>();
-        playerSkill[form] = new PlayerLevel(level);
+        auto lastLevelCasts = serializer->Read<uint32_t>();
+        playerSkill[form] = new PlayerLevel(level,lastLevelCasts);
         ApplyLevel(form);
     }
 }

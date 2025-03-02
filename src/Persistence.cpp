@@ -1,7 +1,7 @@
 #include "Persistence.h"
 #include "Serializer.h"
 #include "ScrollManager.h"
-#define LATEST_VERSION 1
+#define LATEST_VERSION 2
 
 
 static void SaveCallback(SKSE::SerializationInterface* a_intfc) {
