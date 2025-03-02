@@ -52,7 +52,7 @@ void ScrollManager::ReplaceSpellTome(RE::TESObjectBOOK* book) {
 
             scrollData[newBook] = new ScrollData(spell, newBook);
             newBook->SetFormID(id, false);
-
+            ApplyLevel(newBook);
         }
     }
 }
@@ -73,10 +73,14 @@ PlayerLevel* ScrollManager::GetPlayerSkill(RE::SpellItem* item) {
     return nullptr;
 }
 
-ScrollLevel* ScrollManager::GetScrollLevel(PlayerLevel* level) { 
+ScrollLevel* ScrollManager::GetScrollLevel(RE::SpellItem* scroll) { 
     ScrollLevel* last = nullptr;
+    auto level = GetPlayerSkill(scroll);
+    if (!level) {
+        return scrollLevels.front();
+    }
     for (auto scrollLevel : scrollLevels) {
-        if (scrollLevel->level >= level->level) {
+        if (scrollLevel->casts >= level->casts) {
             return last;
         }
         last = scrollLevel;
@@ -86,9 +90,8 @@ ScrollLevel* ScrollManager::GetScrollLevel(PlayerLevel* level) {
 
 void ScrollManager::ApplyLevel(RE::SpellItem* scroll) {
     auto data = GetScrollData(scroll);
-    auto skill = GetPlayerSkill(scroll);
-    if (data && skill) {
-        auto level = GetScrollLevel(skill);
+    if (data) {
+        auto level = GetScrollLevel(scroll);
         if (level) {
             auto base = data->BaseSpell;
             auto scroll = data->Scroll;
@@ -106,6 +109,29 @@ void ScrollManager::ApplyLevel(RE::SpellItem* scroll) {
     }
 }
 
+void ScrollManager::HandleLevelUp(RE::SpellItem* spell) {
+    auto now = RE::Calendar::GetSingleton()->GetHoursPassed();
+
+    if (playerSkill.find(spell) == playerSkill.end()) {
+        playerSkill[spell] = new PlayerLevel(0);
+    }
+
+    if (playerSkill[spell]->CanLevelUp()) {
+        playerSkill[spell]->casts++;
+        playerSkill[spell]->lastLevelUp = now;
+        ApplyLevel(spell);
+        auto data = GetScrollData(spell);
+        auto level = GetScrollLevel(spell);
+        if (data) {
+            if (level) {
+                RE::DebugNotification(std::format("Your knowledge at the spell {} is at level {}", data->BaseSpell->GetName(), level->level).c_str());
+            } else {
+                RE::DebugNotification(std::format("You learned the spell {}",data->BaseSpell->GetName()).c_str());
+            }
+        }
+    }
+}
+
 playerSkillMap& ScrollManager::GetTimesCastMap() {
     return playerSkill;
 }
@@ -114,7 +140,7 @@ void ScrollManager::SaveGame(Serializer* serializer) {
     serializer->Write<uint32_t>(playerSkill.size());
     for (auto [key, value] : playerSkill) {
         serializer->WriteForm(key);
-        serializer->Write<uint32_t>(value->level);
+        serializer->Write<uint32_t>(value->casts);
     }
 }
 
@@ -246,17 +272,7 @@ bool ScrollManager::OnUnEquip(RE::Actor* player, RE::TESBoundObject* a_object, R
 void ScrollManager::OnCast(RE::Actor* caster, RE::SpellItem* spell) {
     if (spell->GetDelivery() == RE::MagicSystem::Delivery::kSelf) {
         if (spell->HasKeywordByEditorID("BOP_ChannelingTome")) {
-            auto now = RE::Calendar::GetSingleton()->GetHoursPassed();
-
-            if (playerSkill.find(spell) == playerSkill.end()) {
-                playerSkill[spell] = new PlayerLevel(0);
-            }
-
-            if (playerSkill[spell]->CanLevelUp()) {
-                playerSkill[spell]->level++;
-                playerSkill[spell]->lastLevelUp = now;
-                ApplyLevel(spell);
-            }
+            HandleLevelUp(spell);
         }
     }
 
@@ -264,17 +280,7 @@ void ScrollManager::OnCast(RE::Actor* caster, RE::SpellItem* spell) {
 
 void ScrollManager::OnHit(RE::Actor* caster, RE::SpellItem* spell) {
     if (spell->HasKeywordByEditorID("BOP_ChannelingTome")) {
-        auto now = RE::Calendar::GetSingleton()->GetHoursPassed();
-
-        if (playerSkill.find(spell) == playerSkill.end()) {
-            playerSkill[spell] = new PlayerLevel(0);
-        }
-
-        if (playerSkill[spell]->CanLevelUp()) {
-            playerSkill[spell]->level++;
-            playerSkill[spell]->lastLevelUp = now;
-            ApplyLevel(spell);
-        }
+        HandleLevelUp(spell);
     }
 }
 

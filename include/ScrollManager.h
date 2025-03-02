@@ -10,7 +10,7 @@ struct HandBook {
 };
 
 struct PlayerLevel {
-    uint32_t level;
+    uint32_t casts;
     float lastLevelUp = 0;
     bool CanLevelUp() {
         auto now = RE::Calendar::GetSingleton()->GetHoursPassed();
@@ -24,10 +24,11 @@ struct ScrollData {
 };
 
 struct ScrollLevel {
-    uint32_t level;
+    uint32_t casts;
     float magnitudePercentage;
     float durationPercentage;
     float costPercentage;
+    uint32_t level;
 };
 
 using replaceModelMap = std::map<std::string, std::string>;
@@ -40,10 +41,10 @@ class ScrollManager {
 
 
     static inline scrollLevelVector scrollLevels = {
-        new ScrollLevel(0, 50, 50, 130),
-        new ScrollLevel(3, 80, 80, 120),
-        new ScrollLevel(7, 90, 90, 110),
-        new ScrollLevel(10, 10, 10, 100),
+        new ScrollLevel(0, 50, 50, 130, 1),
+        new ScrollLevel(3, 80, 80, 120, 2),
+        new ScrollLevel(7, 90, 90, 110, 3),
+        new ScrollLevel(10, 10, 10, 100, 4),
     };
 
     static inline replaceModelMap replaceModels = {
@@ -70,8 +71,9 @@ class ScrollManager {
     static void ReplaceSpellTome(RE::TESObjectBOOK* book);
     static ScrollData* GetScrollData(RE::SpellItem* item);
     static PlayerLevel* GetPlayerSkill(RE::SpellItem* item);
-    static ScrollLevel* GetScrollLevel(PlayerLevel* level);
+    static ScrollLevel* GetScrollLevel(RE::SpellItem* level);
     static void ApplyLevel(RE::SpellItem* scroll);
+    static void HandleLevelUp(RE::SpellItem* spell);
 
 public:
     static playerSkillMap& GetTimesCastMap();
