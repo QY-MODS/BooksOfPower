@@ -5,7 +5,8 @@
   "dependencies": [
     "spdlog",
     "rapidcsv",
-    "clib-util"
+    "clib-util",
+    "nlohmann-json"
   ],
   "overrides": [
     {

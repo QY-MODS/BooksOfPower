@@ -1,5 +1,7 @@
 #include "ScrollManager.h"
 #include "Utils.h"
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 void ScrollManager::ReplaceSpellTome(RE::TESObjectBOOK* book) {
     auto spell = book->GetSpell();
@@ -184,20 +186,150 @@ void ScrollManager::LoadGame(Serializer* serializer) {
     }
 }
 
+void ScrollManager::ReadConfigFile() {
+    const std::string filename = "Data\\SKSE\\Plugins\\BooksOfPower.json";
+
+    std::ifstream file(filename);
+
+    if (!file) {
+        logger::error("BooksOfPower.json not found");
+        return;
+    }
+
+    try {
+        const json data = json::parse(file);
+        logger::info("Missing HandBookModels");
+
+        logger::info("Reading: HandBookModels");
+        if (data.contains("HandBookModels")) {
+            if (data["HandBookModels"].is_array()) {
+                for (auto item : data["HandBookModels"]) {
+                    if (item.contains("ActorValue") && item.contains("BookEditorId")) {
+                        if (item["ActorValue"].is_string() && item["BookEditorId"].is_string()) {
+                            auto avString = item["ActorValue"].get<std::string>();
+                            auto editorId = item["BookEditorId"].get<std::string>();
+                            auto av = Utils::ActorValueFromString(avString);
+                            handBooks[av] = new HandBook(editorId);
+
+                            logger::info("Registered HandBookModels BookEditorId: {} ActorValue: {}", editorId, av);
+                        } else {
+                            logger::error("ActorValue and BookEditorId must be string");
+                        }
+                    } else {
+                        logger::error("Missing ActorValue and or BookEditorId");
+                    }
+                }
+            } else {
+                logger::error("HandBookModels must be an array");
+            }
+        } else {
+            logger::error("Missing HandBookModels");
+        }
+
+        logger::info("Reading: BookModelSwap");
+        if (data.contains("BookModelSwap")) {
+            if (data["BookModelSwap"].is_array()) {
+                for (auto item : data["BookModelSwap"]) {
+                    if (item.contains("From") && item.contains("To")) {
+                        if (item["From"].is_string() && item["To"].is_string()) {
+                            auto from = item["From"].get<std::string>();
+                            auto to = item["To"].get<std::string>();
+                            replaceModels[from] = to;
+                            logger::info("Registered BookModelSwap From: {} To: {}", from, to);
+
+                        } else {
+                            logger::error("From and To must be string");
+                        }
+                    } else {
+                        logger::error("Missing From and or To");
+                    }
+                }
+            } else {
+                logger::error("BookModelSwap must be an array");
+            }
+        } else {
+            logger::error("Missing BookModelSwap");
+        }
+
+        logger::info("Reading: ScrollLevels");
+        if (data.contains("ScrollLevels")) {
+            if (data["ScrollLevels"].is_array()) {
+                uint32_t level = 1;
+                uint32_t lastCasts = 0;
+                for (auto item : data["ScrollLevels"]) {
+
+                    uint32_t casts = 0;
+                    float magnitudePercentage = 0;
+                    float durationPercentage = 0;
+                    float costPercentage = 0;
+
+                    if (item.contains("NumberOfSuccessfulCasts")) {
+                        if (item["NumberOfSuccessfulCasts"].is_number_integer()) {
+                            casts = item["NumberOfSuccessfulCasts"].get<uint32_t>();
+                        } else {
+                            logger::error("NumberOfSuccessfulCasts must be integer");
+                        }
+                    } 
+
+                    if (item.contains("MagnitudePercentage")) {
+                        if (item["MagnitudePercentage"].is_number()) {
+                            magnitudePercentage = item["MagnitudePercentage"].get<float>();
+                        } else {
+                            logger::error("MagnitudePercentage must be a number");
+                        }
+                    }
+
+                    if (item.contains("DurationPercentage")) {
+                        if (item["DurationPercentage"].is_number()) {
+                            durationPercentage = item["DurationPercentage"].get<float>();
+                        } else {
+                            logger::error("DurationPercentage must be a number");
+                        }
+                    }
+
+                    if (item.contains("CostPercentage")) {
+                        if (item["CostPercentage"].is_number()) {
+                            costPercentage = item["CostPercentage"].get<float>();
+                        } else {
+                            logger::error("CostPercentage must be a number");
+                        }
+                    }
+
+                    if (casts >= lastCasts) {
+                        scrollLevels.push_back(new ScrollLevel(casts, magnitudePercentage, durationPercentage, costPercentage, level));
+                        logger::info("Registered ScrollLevels NumberOfSuccessfulCasts: {}, MagnitudePercentage: {}, DurationPercentage: {}, CostPercentage: {}, ", casts, magnitudePercentage, durationPercentage, costPercentage);
+                        level++;
+                        lastCasts = casts;
+                    } else {
+                        logger::error("NumberOfSuccessfulCasts must be ascending ordered last: {} current: {}", lastCasts, casts);
+                    }
+                }
+            } else {
+                logger::error("ScrollLevels must be an array");
+            }
+        } else {
+            logger::error("Missing ScrollLevels");
+        }
+
+
+    } catch (const json::parse_error&) {  // NOLINT(bugprone-empty-catch)
+    }
+}
+
 void ScrollManager::DataLoaded() {
+
+    ReadConfigFile();
+
     keyword = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("BOP_ChannelingTome");
 
-    auto scroll = RE::TESForm::LookupByEditorID<RE::ScrollItem>("BOP_FireballScroll");
 
-    if (scroll) {
-        const auto& [map, lock] = RE::TESForm::GetAllForms();
-        const RE::BSReadWriteLock l{lock};
-        for (auto& [id, form] : *map) {
-            if (form) {
-                if (auto book = form->As<RE::TESObjectBOOK>()) {
-                    if (book->IsBookTome()) {
-                        ReplaceSpellTome(book);
-                    }
+    const auto& [map, lock] = RE::TESForm::GetAllForms();
+    const RE::BSReadWriteLock l{lock};
+    for (auto& [id, form] : *map) {
+        if (form) {
+            if (auto book = form->As<RE::TESObjectBOOK>()) {
+                if (book->IsBookTome()) {
+                    ReplaceSpellTome(book);
                 }
             }
         }

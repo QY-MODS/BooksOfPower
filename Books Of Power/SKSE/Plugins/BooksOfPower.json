@@ -1,0 +1,68 @@
+{
+  "ScrollLevels": [
+    {
+      "MagnitudePercentage": 50,
+      "DurationPercentage": 50,
+      "CostPercentage": 130
+    },
+    {
+      "NumberOfSuccessfulCasts": 3,
+      "MagnitudePercentage": 80,
+      "DurationPercentage": 80,
+      "CostPercentage": 120
+    },
+    {
+      "NumberOfSuccessfulCasts": 7,
+      "MagnitudePercentage": 90,
+      "DurationPercentage": 90,
+      "CostPercentage": 110
+    },
+    {
+      "NumberOfSuccessfulCasts": 10
+    }
+  ],
+  "BookModelSwap": [
+    {
+      "From": "Clutter\\Books\\SpellTomeAlterationLowPoly.nif",
+      "To": "Books Of Power\\SpellTomeAlterationLowPoly.nif"
+    },
+    {
+      "From": "Clutter\\Books\\SpellTomeConjurationLowPoly.nif",
+      "To": "Books Of Power\\SpellTomeConjurationLowPoly.nif"
+    },
+    {
+      "From": "Clutter\\Books\\SpellTomeDestructionLowPoly.nif",
+      "To": "Books Of Power\\SpellTomeDestructionLowPoly.nif"
+    },
+    {
+      "From": "Clutter\\Books\\SpellTomeRestorationLowPoly.nif",
+      "To": "Books Of Power\\SpellTomeRestorationLowPoly.nif"
+    },
+    {
+      "From": "Clutter\\Books\\SpellTomeIllusionLowPoly.nif",
+      "To": "Books Of Power\\SpellTomeIllusionLowPoly.nif"
+    }
+  ],
+  "HandBookModels": [
+    {
+      "ActorValue": "Illusion",
+      "BookEditorId": "BOP_IllusionSpellBook"
+    },
+    {
+      "ActorValue": "Restoration",
+      "BookEditorId": "BOP_RestorationSpellBook"
+    },
+    {
+      "ActorValue": "Destruction",
+      "BookEditorId": "BOP_DestructionSpellBook"
+    },
+    {
+      "ActorValue": "Alteration",
+      "BookEditorId": "BOP_AltlerationSpellBook"
+    },
+    {
+      "ActorValue": "Conjuration",
+      "BookEditorId": "BOP_ConjurationSpellBook"
+    }
+  ]
+}

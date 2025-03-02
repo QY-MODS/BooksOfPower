@@ -22,5 +22,25 @@ namespace Utils {
         // result->SetFormID(result->GetFormID(), true);
         return result;
     }
+    static inline std::map<std::string, RE::ActorValue> avMap = {
+        {"illusion", RE::ActorValue::kIllusion},
+        {"restoration", RE::ActorValue::kRestoration},
+        {"destruction", RE::ActorValue::kDestruction},
+        {"alteration", RE::ActorValue::kAlteration},
+        {"conjuration", RE::ActorValue::kConjuration},
+    };
+    static inline std::string toLowerCase(const std::string& input) {
+        std::string result = input;
+        std::transform(result.begin(), result.end(), result.begin(), ::tolower);
+        return result;
+    }
+    inline RE::ActorValue ActorValueFromString(std::string& string) {
+        auto lowerString = toLowerCase(string);
+        auto it = avMap.find(lowerString);
+        if (it != avMap.end()) {
+            return it->second;
+        }
+        return RE::ActorValue::kNone;
+    }
 
 }

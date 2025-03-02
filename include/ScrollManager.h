@@ -41,28 +41,9 @@ using scrollLevelVector = std::vector<ScrollLevel*>;
 class ScrollManager {
 
 
-    static inline scrollLevelVector scrollLevels = {
-        new ScrollLevel(0, 50, 50, 130, 1),
-        new ScrollLevel(3, 80, 80, 120, 2),
-        new ScrollLevel(7, 90, 90, 110, 3),
-        new ScrollLevel(10, 10, 10, 100, 4),
-    };
-
-    static inline replaceModelMap replaceModels = {
-        {"Clutter\\Books\\SpellTomeAlterationLowPoly.nif", "Books Of Power\\SpellTomeAlterationLowPoly.nif"},
-        {"Clutter\\Books\\SpellTomeConjurationLowPoly.nif", "Books Of Power\\SpellTomeConjurationLowPoly.nif"},
-        {"Clutter\\Books\\SpellTomeDestructionLowPoly.nif", "Books Of Power\\SpellTomeDestructionLowPoly.nif"},
-        {"Clutter\\Books\\SpellTomeRestorationLowPoly.nif", "Books Of Power\\SpellTomeRestorationLowPoly.nif"},
-        {"Clutter\\Books\\SpellTomeIllusionLowPoly.nif", "Books Of Power\\SpellTomeIllusionLowPoly.nif"},
-    };
-
-    static inline handBooksMap handBooks = {
-        {RE::ActorValue::kIllusion, new HandBook("BOP_IllusionSpellBook")},
-        {RE::ActorValue::kRestoration, new HandBook("BOP_RestorationSpellBook")},
-        {RE::ActorValue::kDestruction, new HandBook("BOP_DestructionSpellBook")},
-        {RE::ActorValue::kAlteration, new HandBook("BOP_AltlerationSpellBook")},
-        {RE::ActorValue::kConjuration, new HandBook("BOP_ConjurationSpellBook")},
-    };
+    static inline scrollLevelVector scrollLevels;
+    static inline replaceModelMap replaceModels;
+    static inline handBooksMap handBooks;
 
     static inline scrollDataMap scrollData;
     static inline playerSkillMap playerSkill;
@@ -75,6 +56,7 @@ class ScrollManager {
     static ScrollLevel* GetScrollLevel(RE::SpellItem* level);
     static void ApplyLevel(RE::SpellItem* scroll);
     static void HandleLevelUp(RE::SpellItem* spell);
+    static void ReadConfigFile();
 
 public:
     static playerSkillMap& GetTimesCastMap();
