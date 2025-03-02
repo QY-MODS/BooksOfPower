@@ -1,13 +1,15 @@
 #include "Persistence.h"
 #include "Serializer.h"
-
+#include "ScrollManager.h"
 #define LATEST_VERSION 1
 
 
 static void SaveCallback(SKSE::SerializationInterface* a_intfc) {
     if (a_intfc->OpenRecord('SPEL', LATEST_VERSION)) {
 
-        auto serializer = Serializer(a_intfc);
+        auto serializer = new Serializer(a_intfc);
+        ScrollManager::SaveGame(serializer);
+        delete serializer;
 
     }
 }
@@ -22,8 +24,9 @@ static void LoadCallback(SKSE::SerializationInterface* a_intfc) {
     while (a_intfc->GetNextRecordInfo(type, version, length)) {
         if (type == 'SPEL' && version == LATEST_VERSION) {
 
-            auto serializer = Serializer(a_intfc);
-
+            auto serializer = new Serializer(a_intfc);
+            ScrollManager::LoadGame(serializer);
+            delete serializer;
 
         }
     }
@@ -31,7 +34,7 @@ static void LoadCallback(SKSE::SerializationInterface* a_intfc) {
 
 void Persistence::Install() {
     auto serialization = SKSE::GetSerializationInterface();
-    serialization->SetUniqueID('DSTV');
+    serialization->SetUniqueID('BOKP');
     serialization->SetSaveCallback(SaveCallback);
     serialization->SetLoadCallback(LoadCallback);
 }
