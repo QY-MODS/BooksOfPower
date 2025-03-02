@@ -122,7 +122,7 @@ void Hooks::GetCastingTypeHook::Install() {
 
 float Hooks::GetChargeTimeHook::GetChargeTime(RE::ScrollItem* ref) { 
     if (ref && ref->HasKeywordByEditorID("BOP_ChannelingTome")) {
-        return ref->SpellItem::data.chargeTime * 10;
+        return originalFunction(ref) * 10;
     }
     return originalFunction(ref);
 }
