@@ -65,6 +65,15 @@ RE::ActorValue ScrollManager::GetSkill(RE::ScrollItem* item) {
     return RE::ActorValue::kDestruction;
 }
 
+timesCastMap& ScrollManager::GetTimesCastMap() {
+    return timesCast;
+}
+
+void ScrollManager::SaveGame(Serializer* serializer) {}
+
+void ScrollManager::LoadGame(Serializer* serializer) {
+}
+
 void ScrollManager::DataLoaded() {
     keyword = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("BOP_ChannelingTome");
 
@@ -170,11 +179,26 @@ bool ScrollManager::OnUnEquip(RE::Actor* player, RE::TESBoundObject* a_object, R
 }
 
 void ScrollManager::OnCast(RE::Actor* caster, RE::SpellItem* spell) {
-    logger::trace("Caster {} cast {}", caster->GetName(), spell->GetName());
+    if (spell->GetDelivery() == RE::MagicSystem::Delivery::kSelf) {
+        if (spell->HasKeywordByEditorID("BOP_ChannelingTome")) {
+            auto now = RE::Calendar::GetSingleton()->GetHoursPassed();
+            if (timesCast[spell].CanLevelUp()) {
+                timesCast[spell].level++;
+                timesCast[spell].lastLevelUp=now;
+            }
+        }
+    }
+
 }
 
 void ScrollManager::OnHit(RE::Actor* caster, RE::SpellItem* spell) {
-    logger::trace("Caster {} hit {}, blocked {}", caster->GetName(), spell->GetName(), blocked ? "yes" : "no");
+    if (spell->HasKeywordByEditorID("BOP_ChannelingTome")) {
+        auto now = RE::Calendar::GetSingleton()->GetHoursPassed();
+        if (timesCast[spell].CanLevelUp()) {
+            timesCast[spell].level++;
+            timesCast[spell].lastLevelUp = now;
+        }
+    }
 }
 
 RE::TESObjectWEAP* HandBook::GetWeapon() {

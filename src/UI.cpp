@@ -1,4 +1,5 @@
 #include "UI.h"
+#include "ScrollManager.h"
 
 void UI::Register() {
 
@@ -10,8 +11,10 @@ void UI::Register() {
 }
 
 void __stdcall UI::Example1::Render() {
-    if (ImGui::Button("Test")) {
+    //ImGui::Text(std::format("Now: {}", RE::Calendar::GetSingleton()->GetHoursPassed()).c_str());
 
+    for (auto & [key, value] : ScrollManager::GetTimesCastMap()) {
+        ImGui::Text(std::format("Spell: {}, Times Cast: {}, Can Level Up: {}", key->GetName(), value.level, value.CanLevelUp()).c_str());
     }
 }
 

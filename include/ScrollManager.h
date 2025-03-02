@@ -1,9 +1,6 @@
 #pragma once
 #include "Serializer.h"
 
-struct ScrollLevel {
-    uint32_t TimesSuccessfulyCast;
-};
 
 struct HandBook {
     std::string weaponEditorId;
@@ -12,9 +9,22 @@ struct HandBook {
     RE::TESObjectWEAP* GetWeapon();
     void Equip(RE::Actor* actor);
 };
+struct PlayerLevel {
+    uint32_t level;
+    float lastLevelUp = 0;
+    bool CanLevelUp() {
+        auto now = RE::Calendar::GetSingleton()->GetHoursPassed();
+        return lastLevelUp == 0 || now - lastLevelUp > 0.01;
+    }
+};
+
+using actorValueMap = std::map<RE::ScrollItem*, RE::ActorValue>;
+using replaceModelMap = std::map<std::string, std::string>;
+using handBooksMap = std::map<RE::ActorValue, HandBook*>;
+using timesCastMap = std::map<RE::SpellItem*, PlayerLevel>;
 class ScrollManager {
 
-    static inline std::map<std::string, std::string> replaceModels = {
+    static inline replaceModelMap replaceModels = {
         {"Clutter\\Books\\SpellTomeAlterationLowPoly.nif", "Books Of Power\\SpellTomeAlterationLowPoly.nif"},
         {"Clutter\\Books\\SpellTomeConjurationLowPoly.nif", "Books Of Power\\SpellTomeConjurationLowPoly.nif"},
         {"Clutter\\Books\\SpellTomeDestructionLowPoly.nif", "Books Of Power\\SpellTomeDestructionLowPoly.nif"},
@@ -22,7 +32,7 @@ class ScrollManager {
         {"Clutter\\Books\\SpellTomeIllusionLowPoly.nif", "Books Of Power\\SpellTomeIllusionLowPoly.nif"},
     };
 
-    static inline std::map<RE::ActorValue, HandBook*> handBooks = {
+    static inline handBooksMap handBooks = {
         {RE::ActorValue::kIllusion, new HandBook("BOP_IllusionSpellBook")},
         {RE::ActorValue::kRestoration, new HandBook("BOP_RestorationSpellBook")},
         {RE::ActorValue::kDestruction, new HandBook("BOP_DestructionSpellBook")},
@@ -30,14 +40,17 @@ class ScrollManager {
         {RE::ActorValue::kConjuration, new HandBook("BOP_ConjurationSpellBook")},
     };
 
-    static inline std::map<RE::ScrollItem*, RE::ActorValue> skillActorValues;
+    static inline actorValueMap skillActorValues;
 
     static inline RE::BGSKeyword* keyword = nullptr;
     static inline bool DefaultBehavior = false;
     static void ReplaceSpellTome(RE::TESObjectBOOK* book);
     static RE::ActorValue GetSkill(RE::ScrollItem* item);
 
+    static inline timesCastMap timesCast;
+
 public:
+    static timesCastMap& GetTimesCastMap();
     static void SaveGame(Serializer* serializer);
     static void LoadGame(Serializer* serializer);
     static void DataLoaded();

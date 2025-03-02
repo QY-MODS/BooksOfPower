@@ -182,16 +182,21 @@ RE::BSEventNotifyControl Hooks::HitEvent::ProcessEvent(const RE::TESHitEvent* ev
         if (auto caster = event->cause.get()) {
             if (auto actor = caster->As<RE::Actor>()) {
                 if (actor->IsPlayerRef()) {
-                    if (auto spell = RE::TESForm::LookupByID<RE::SpellItem>(event->source)) {
-                        ScrollManager::OnHit(actor, spell);
+                    if (event->target) {
+                        if (auto target = event->target.get()) {
+                            if (target->As<RE::Actor>()) {
+                                if (auto spell = RE::TESForm::LookupByID<RE::SpellItem>(event->source)) {
+                                    ScrollManager::OnHit(actor, spell);
+                                }
+                            } 
+                        }
                     }
                 }
             }
         }
     }
 
-    logger::trace("source: {:x}", event->source);
-    logger::trace("projectile: {:x}", event->projectile);
+
 
     return RE::BSEventNotifyControl::kContinue;
 }
