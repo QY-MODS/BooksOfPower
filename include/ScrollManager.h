@@ -24,7 +24,7 @@ class ScrollManager {
         {RE::ActorValue::kIllusion, new HandBook("BOP_IllusionSpellBook")},
         {RE::ActorValue::kRestoration, new HandBook("BOP_RestorationSpellBook")},
         {RE::ActorValue::kDestruction, new HandBook("BOP_DestructionSpellBook")},
-        {RE::ActorValue::kAlteration, new HandBook("BOP_AlterationSpellBook")},
+        {RE::ActorValue::kAlteration, new HandBook("BOP_AltlerationSpellBook")},
         {RE::ActorValue::kConjuration, new HandBook("BOP_ConjurationSpellBook")},
     };
 
