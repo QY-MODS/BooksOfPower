@@ -21,6 +21,8 @@ static void LoadCallback(SKSE::SerializationInterface* a_intfc) {
     uint32_t length;
     bool refreshGame = false;
 
+    ScrollManager::CleanLevel();
+
     while (a_intfc->GetNextRecordInfo(type, version, length)) {
         if (type == 'SPEL' && version == LATEST_VERSION) {
 

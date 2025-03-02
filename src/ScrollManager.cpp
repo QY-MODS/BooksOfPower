@@ -228,6 +228,14 @@ void ScrollManager::LoadGame(Serializer* serializer) {
     }
 }
 
+void ScrollManager::CleanLevel() {
+    for (auto [key, value] : playerSkill) {
+        delete value;
+    }
+
+    playerSkill.clear();
+}
+
 void ScrollManager::ReadConfigFile() {
     const std::string filename = "Data\\SKSE\\Plugins\\BooksOfPower.json";
 
