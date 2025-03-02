@@ -117,7 +117,7 @@ void ScrollManager::ApplyLevel(RE::SpellItem* scroll) {
             auto base = data->BaseSpell;
             auto scroll = data->Scroll;
             scroll->data.costOverride = base->data.costOverride * level->costPercentage / 100;
-            for (auto i = 0; i < scroll->effects.size(); i++) {
+            for (int i = scroll->effects.size()-1; i >= 0; i--) {
                 if (i < 2) {
                     if (scroll->effects[i]->baseEffect == costPerSecoundEffect ||
                         scroll->effects[i]->baseEffect == costEffect) {
@@ -127,7 +127,7 @@ void ScrollManager::ApplyLevel(RE::SpellItem* scroll) {
                         scroll->effects[i]->effectItem.magnitude = level->level;
                     }
                 } else {
-                    if (i-2 < base->effects.size()) {
+                    if (i - 2 < base->effects.size()) {
                         scroll->effects[i]->effectItem.magnitude = base->effects[i - 2]->effectItem.magnitude * level->magnitudePercentage / 100;
                         scroll->effects[i]->effectItem.duration = base->effects[i - 2]->effectItem.duration * level->durationPercentage / 100;
                         scroll->effects[i]->cost = base->effects[i - 2]->cost * level->costPercentage / 100;
@@ -138,11 +138,23 @@ void ScrollManager::ApplyLevel(RE::SpellItem* scroll) {
             auto base = data->BaseSpell;
             auto scroll = data->Scroll;
             scroll->data.costOverride = base->data.costOverride;
-            if (base->effects.size() == scroll->effects.size()) {
-                for (auto i = 0; i < base->effects.size(); i++) {
-                    scroll->effects[i]->effectItem.magnitude = base->effects[i]->effectItem.magnitude;
-                    scroll->effects[i]->effectItem.duration = base->effects[i]->effectItem.duration;
-                    scroll->effects[i]->cost = base->effects[i]->cost;
+            for (int i = scroll->effects.size() - 1; i >= 0; i--) {
+                if (i < 2) {
+                    if (scroll->effects[i]->baseEffect == costPerSecoundEffect ||
+                        scroll->effects[i]->baseEffect == costEffect) {
+                        scroll->effects[i]->effectItem.magnitude = scroll->CalculateMagickaCost(RE::PlayerCharacter::GetSingleton());
+                    } 
+                    else 
+                        if (scroll->effects[i]->baseEffect == levelEffect) 
+                    {
+                        scroll->effects[i]->effectItem.magnitude = maxLevel;
+                    }
+                } else {
+                    if (i - 2 < base->effects.size()) {
+                        scroll->effects[i]->effectItem.magnitude = base->effects[i - 2]->effectItem.magnitude;
+                        scroll->effects[i]->effectItem.duration = base->effects[i - 2]->effectItem.duration;
+                        scroll->effects[i]->cost = base->effects[i - 2]->cost;
+                    } 
                 }
             }
         }
@@ -344,6 +356,7 @@ void ScrollManager::ReadConfigFile() {
                         logger::error("NumberOfSuccessfulCasts must be ascending ordered last: {} current: {}", lastCasts, casts);
                     }
                 }
+                maxLevel = level-1;
             } else {
                 logger::error("ScrollLevels must be an array");
             }

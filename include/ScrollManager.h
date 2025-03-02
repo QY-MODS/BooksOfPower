@@ -37,7 +37,7 @@ using scrollLevelVector = std::vector<ScrollLevel*>;
 
 class ScrollManager {
 
-
+    static inline uint32_t maxLevel = 1;
     static inline scrollLevelVector scrollLevels;
     static inline replaceModelMap replaceModels;
     static inline handBooksMap handBooks;
