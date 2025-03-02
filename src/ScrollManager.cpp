@@ -212,24 +212,20 @@ void ScrollManager::SaveGame(Serializer* serializer) {
 void ScrollManager::LoadGame(Serializer* serializer) {
     auto length = serializer->Read<uint32_t>();
 
-    for (auto [key, value] : playerSkill) {
-        delete value;
-    }
-
-    playerSkill.clear();
-
     for (uint32_t i = 0; i < length; i++) 
     {
         auto form = serializer->ReadForm<RE::SpellItem>();
         auto level = serializer->Read<uint32_t>();
         auto lastLevelCasts = serializer->Read<uint32_t>();
-        playerSkill[form] = new PlayerLevel(level,lastLevelCasts);
+        playerSkill[form] = new PlayerLevel(level, lastLevelCasts);
         ApplyLevel(form);
     }
 }
 
 void ScrollManager::CleanLevel() {
     for (auto [key, value] : playerSkill) {
+        value->casts = 0;
+        ApplyLevel(key);
         delete value;
     }
 
