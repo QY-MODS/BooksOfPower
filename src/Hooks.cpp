@@ -127,11 +127,6 @@ void Hooks::SpellCastEvent::Install() {
 void Hooks::BookInitHook::thunk(RE::TESObjectBOOK* ref, RE::TESFile* file) {
     originalFunction(ref, file);
     ScrollManager::ReplaceBookWithScroll(ref);
-    if (ref) {
-        logger::trace("My very own form: {}", ref->GetName());
-    } else {
-        logger::trace("No form :(");
-    }
 }
 
 void Hooks::BookInitHook::Install() {
