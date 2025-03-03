@@ -15,12 +15,16 @@ namespace Utils {
         return slot->As<RE::BGSEquipSlot>();
     }
 
-    inline RE::TESForm* CreateFormByType(RE::FormType type) {
+    template<class T>
+    inline T* CreateFormByType() {
         using func_t = RE::TESForm*(RE::FormType);
         const REL::Relocation<func_t> func{RELOCATION_ID(13656, 13765)};
-        auto result = func(type);
-        // result->SetFormID(result->GetFormID(), true);
-        return result;
+        auto result = func(T::FORMTYPE);
+        // result->SetFormID(result->GetFormID(), true); //this is also done in the game code but is not desired in the mod
+        if (!result) {
+            return nullptr;
+        }
+        return result->As<T>();
     }
     static inline std::map<std::string, RE::ActorValue> avMap = {
         {"illusion", RE::ActorValue::kIllusion},

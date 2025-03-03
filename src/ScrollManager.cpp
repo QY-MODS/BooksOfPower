@@ -3,7 +3,7 @@
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
-void ScrollManager::ReplaceSpellTome(RE::TESObjectBOOK* book) {
+void ScrollManager::ReplaceBookWithScroll(RE::TESObjectBOOK* book) {
 
     if (!book) {
         return;
@@ -15,17 +15,13 @@ void ScrollManager::ReplaceSpellTome(RE::TESObjectBOOK* book) {
 
     auto id = book->GetFormID();
 
-    auto df = Utils::CreateFormByType(RE::FormType::Scroll);
-    if (df) {
-        if (auto newBook = df->As<RE::ScrollItem>()) 
-        {
-            scrollData[newBook] = new ScrollData(nullptr, newBook, book);
-            newBook->SetFormID(id, false);
-        }
+    if (auto scroll = Utils::CreateFormByType<RE::ScrollItem>()) {
+        scrollData[scroll] = new ScrollData(nullptr, scroll, book);
+        scroll->SetFormID(id, false);
     }
 }
 
-void ScrollManager::CopyBookData(ScrollData* data) {
+void ScrollManager::ApplyEffectsToScroll(ScrollData* data) {
     auto book = data->OriginalItem;
 
     auto spell = book->GetSpell();
@@ -87,7 +83,7 @@ void ScrollManager::CopyBookData(ScrollData* data) {
         newBook->SpellItem::data = spell->data;
         newBook->SpellItem::hostileCount = spell->hostileCount;
         newBook->SpellItem::avEffectSetting = spell->avEffectSetting;
-
+        newBook->equipSlot = spell->equipSlot;
         scrollData[newBook] = new ScrollData(spell, newBook);
         ApplyLevel(newBook);
 
@@ -402,7 +398,7 @@ void ScrollManager::DataLoaded() {
     levelEffect = RE::TESForm::LookupByEditorID<RE::EffectSetting>("BOP_LevelDisplay");
 
     for (auto [key, value] : scrollData) {
-        CopyBookData(value);
+        ApplyEffectsToScroll(value);
     }
 
 

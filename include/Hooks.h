@@ -1,14 +1,11 @@
 #pragma once
 namespace Hooks {
 
-
-
     void Install();
 
-
     struct ScrollSpellTypeHook {
-        static inline REL::Relocation<RE::MagicSystem::SpellType(RE::ScrollItem*)> originalFunction;
-        static RE::MagicSystem::SpellType GetSpellType(RE::ScrollItem* ref);
+        static RE::MagicSystem::SpellType thunk(RE::ScrollItem* ref);
+        static inline REL::Relocation<decltype(thunk)> originalFunction;
         static void Install();
     };
 
@@ -20,8 +17,8 @@ namespace Hooks {
     };
 
     struct GetCastingTypeHook {
-        static inline REL::Relocation<RE::MagicSystem::CastingType(RE::ScrollItem*)> originalFunction;
-        static RE::MagicSystem::CastingType GetCastingType(RE::ScrollItem* ref);
+        static RE::MagicSystem::CastingType thunk(RE::ScrollItem* ref);
+        static inline REL::Relocation<decltype(thunk)> originalFunction;
         static void Install();
     };
 
@@ -51,7 +48,7 @@ namespace Hooks {
     };
 
 
-    struct FormInitHook {
+    struct BookInitHook {
         static void thunk(RE::TESObjectBOOK* ref, RE::TESFile* file);
         static inline REL::Relocation<decltype(thunk)> originalFunction;
         static void Install();

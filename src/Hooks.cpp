@@ -1,7 +1,7 @@
 #include "Hooks.h"
 #include "ScrollManager.h"
 
-RE::MagicSystem::SpellType Hooks::ScrollSpellTypeHook::GetSpellType(RE::ScrollItem* ref) {
+RE::MagicSystem::SpellType Hooks::ScrollSpellTypeHook::thunk(RE::ScrollItem* ref) {
     auto result = originalFunction(ref);
 
     if (ref && ref->HasKeywordByEditorID("BOP_ChannelingTome")) {
@@ -12,7 +12,7 @@ RE::MagicSystem::SpellType Hooks::ScrollSpellTypeHook::GetSpellType(RE::ScrollIt
 }
 
 void Hooks::ScrollSpellTypeHook::Install() {
-    originalFunction = REL::Relocation<std::uintptr_t>(RE::ScrollItem::VTABLE[0]).write_vfunc(0x53, GetSpellType);
+    originalFunction = REL::Relocation<std::uintptr_t>(RE::ScrollItem::VTABLE[0]).write_vfunc(0x53, thunk);
 }
 
 void Hooks::EquipObjectHook::Install() {
@@ -77,7 +77,7 @@ void Hooks::EquipSpellHook::Install() {
     // Commonlib
 }
 
-RE::MagicSystem::CastingType Hooks::GetCastingTypeHook::GetCastingType(RE::ScrollItem* ref) {
+RE::MagicSystem::CastingType Hooks::GetCastingTypeHook::thunk(RE::ScrollItem* ref) {
     if (ref && ref->HasKeywordByEditorID("BOP_ChannelingTome")) {
         return ref->SpellItem::data.castingType;
     }
@@ -85,7 +85,7 @@ RE::MagicSystem::CastingType Hooks::GetCastingTypeHook::GetCastingType(RE::Scrol
 }
 
 void Hooks::GetCastingTypeHook::Install() {
-    originalFunction = REL::Relocation<std::uintptr_t>(RE::ScrollItem::VTABLE[0]).write_vfunc(0x55, GetCastingType);
+    originalFunction = REL::Relocation<std::uintptr_t>(RE::ScrollItem::VTABLE[0]).write_vfunc(0x55, thunk);
 }
 
 void Hooks::Install() {
@@ -95,7 +95,7 @@ void Hooks::Install() {
     UnEquipObjectPCHook::Install();
     EquipSpellHook::Install();
     SpellCastEvent::Install();
-    FormInitHook::Install();
+    BookInitHook::Install();
 }
 
 RE::BSEventNotifyControl Hooks::SpellCastEvent::ProcessEvent(const RE::TESSpellCastEvent* event,
@@ -124,9 +124,9 @@ void Hooks::SpellCastEvent::Install() {
     RE::ScriptEventSourceHolder::GetSingleton()->AddEventSink(new SpellCastEvent());
 }
 
-void Hooks::FormInitHook::thunk(RE::TESObjectBOOK* ref, RE::TESFile* file) {
+void Hooks::BookInitHook::thunk(RE::TESObjectBOOK* ref, RE::TESFile* file) {
     originalFunction(ref, file);
-    ScrollManager::ReplaceSpellTome(ref);
+    ScrollManager::ReplaceBookWithScroll(ref);
     if (ref) {
         logger::trace("My very own form: {}", ref->GetName());
     } else {
@@ -134,6 +134,6 @@ void Hooks::FormInitHook::thunk(RE::TESObjectBOOK* ref, RE::TESFile* file) {
     }
 }
 
-void Hooks::FormInitHook::Install() {
+void Hooks::BookInitHook::Install() {
     originalFunction = REL::Relocation<std::uintptr_t>(RE::TESObjectBOOK::VTABLE[0]).write_vfunc(0x6, thunk);
 }

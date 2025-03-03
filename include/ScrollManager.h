@@ -59,11 +59,10 @@ class ScrollManager {
     static void ApplyLevel(RE::SpellItem* scroll);
     static void HandleLevelUp(RE::SpellItem* spell);
     static void ReadConfigFile();
-
+    static void ApplyEffectsToScroll(ScrollData* data);
 public:
     static playerSkillMap& GetTimesCastMap();
-    static void ReplaceSpellTome(RE::TESObjectBOOK* book);
-    static void CopyBookData(ScrollData* data);
+    static void ReplaceBookWithScroll(RE::TESObjectBOOK* book);
     static float GetLevelUpCooldown();
     static void SaveGame(Serializer* serializer);
     static void LoadGame(Serializer* serializer);
