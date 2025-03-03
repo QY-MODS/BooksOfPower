@@ -95,6 +95,7 @@ void Hooks::Install() {
     UnEquipObjectPCHook::Install();
     EquipSpellHook::Install();
     SpellCastEvent::Install();
+    FormInitHook::Install();
 }
 
 RE::BSEventNotifyControl Hooks::SpellCastEvent::ProcessEvent(const RE::TESSpellCastEvent* event,
@@ -121,4 +122,18 @@ RE::BSEventNotifyControl Hooks::SpellCastEvent::ProcessEvent(const RE::TESSpellC
 
 void Hooks::SpellCastEvent::Install() {
     RE::ScriptEventSourceHolder::GetSingleton()->AddEventSink(new SpellCastEvent());
+}
+
+void Hooks::FormInitHook::thunk(RE::TESObjectBOOK* ref, RE::TESFile* file) {
+    originalFunction(ref, file);
+    ScrollManager::ReplaceSpellTome(ref);
+    if (ref) {
+        logger::trace("My very own form: {}", ref->GetName());
+    } else {
+        logger::trace("No form :(");
+    }
+}
+
+void Hooks::FormInitHook::Install() {
+    originalFunction = REL::Relocation<std::uintptr_t>(RE::TESObjectBOOK::VTABLE[0]).write_vfunc(0x6, thunk);
 }

@@ -19,6 +19,7 @@ struct PlayerLevel {
 struct ScrollData {
     RE::SpellItem* BaseSpell;
     RE::SpellItem* Scroll;
+    RE::TESObjectBOOK* OriginalItem;
 };
 
 struct ScrollLevel {
@@ -52,7 +53,6 @@ class ScrollManager {
     static inline RE::EffectSetting* costPerSecoundEffect = nullptr;
     static inline RE::EffectSetting* levelEffect = nullptr;
     static inline bool DefaultBehavior = false;
-    static void ReplaceSpellTome(RE::TESObjectBOOK* book);
     static ScrollData* GetScrollData(RE::SpellItem* item);
     static PlayerLevel* GetPlayerSkill(RE::SpellItem* item);
     static ScrollLevel* GetScrollLevel(RE::SpellItem* level);
@@ -62,6 +62,8 @@ class ScrollManager {
 
 public:
     static playerSkillMap& GetTimesCastMap();
+    static void ReplaceSpellTome(RE::TESObjectBOOK* book);
+    static void CopyBookData(ScrollData* data);
     static float GetLevelUpCooldown();
     static void SaveGame(Serializer* serializer);
     static void LoadGame(Serializer* serializer);

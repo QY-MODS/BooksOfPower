@@ -4,77 +4,96 @@
 using json = nlohmann::json;
 
 void ScrollManager::ReplaceSpellTome(RE::TESObjectBOOK* book) {
+
+    if (!book) {
+        return;
+    }
+
+    if (!book->IsBookTome()) {
+        return;
+    }
+
+    auto id = book->GetFormID();
+
+    auto df = Utils::CreateFormByType(RE::FormType::Scroll);
+    if (df) {
+        if (auto newBook = df->As<RE::ScrollItem>()) 
+        {
+            scrollData[newBook] = new ScrollData(nullptr, newBook, book);
+            newBook->SetFormID(id, false);
+        }
+    }
+}
+
+void ScrollManager::CopyBookData(ScrollData* data) {
+    auto book = data->OriginalItem;
+
     auto spell = book->GetSpell();
 
     if (!spell) {
         return;
     }
+    data->BaseSpell = spell;
 
-    auto id = book->GetFormID();
+    auto df = data->Scroll;
+
     auto model = book->GetModel();
     auto name = book->GetName();
     auto value = book->GetGoldValue();
     auto weight = book->GetWeight();
 
+    if (auto newBook = df->As<RE::ScrollItem>()) {
+        auto effectLevel = new RE::Effect();
+        effectLevel->baseEffect = levelEffect;
+        effectLevel->cost = 0;
 
-    auto df = Utils::CreateFormByType(RE::FormType::Scroll);
-    if (df) {
-        if (auto newBook = df->As<RE::ScrollItem>()) {
+        auto effectCost = new RE::Effect();
+        effectCost->cost = 0;
+        effectCost->baseEffect = spell->GetCastingType() == RE::MagicSystem::CastingType::kConcentration
+                                        ? costPerSecoundEffect
+                                        : costEffect;
 
-            auto effectLevel = new RE::Effect();
-            effectLevel->baseEffect = levelEffect;
-            effectLevel->cost = 0;
+        newBook->effects.push_back(effectLevel);
+        newBook->effects.push_back(effectCost);
 
-            auto effectCost = new RE::Effect();
-            effectCost->cost = 0;
-            effectCost->baseEffect = spell->GetCastingType() == RE::MagicSystem::CastingType::kConcentration ? costPerSecoundEffect : costEffect;
+        newBook->CopyMagicItemData(spell);
 
-            newBook->effects.push_back(effectLevel);
-            newBook->effects.push_back(effectCost);
+        for (auto effect : spell->effects) {
+            auto copy = new RE::Effect();
+            copy->effectItem = effect->effectItem;
 
-            newBook->CopyMagicItemData(spell);
+            copy->baseEffect = effect->baseEffect;
+            copy->cost = effect->cost;
+            copy->conditions = effect->conditions;
 
-            for (auto effect : spell->effects) {
-                auto copy = new RE::Effect();
-                copy->effectItem = effect->effectItem;
-
-                copy->baseEffect = effect->baseEffect;
-                copy->cost = effect->cost;
-                copy->conditions = effect->conditions;
-
-                newBook->effects.push_back(copy);
-            }
-
-
-
-            for (auto key : book->GetKeywords()) {
-                newBook->AddKeyword(key);
-            }
-
-            newBook->AddKeyword(keyword);
-            auto it = replaceModels.find(model);
-            if (it != replaceModels.end()) {
-                newBook->SetModel(it->second.c_str());
-            } else {
-                newBook->SetModel(model);
-            }
-            newBook->weight = weight;
-            newBook->value = value;
-            newBook->SetFullName(name);
-
-            newBook->SpellItem::data = spell->data;
-            newBook->SpellItem::hostileCount = spell->hostileCount;
-            newBook->SpellItem::avEffectSetting = spell->avEffectSetting;
-
-            scrollData[newBook] = new ScrollData(spell, newBook);
-            newBook->SetFormID(id, false);
-            ApplyLevel(newBook);
-
-
-            effectLevel->effectItem.magnitude = 1;
-
-            effectCost->effectItem.magnitude = newBook->CalculateMagickaCost(RE::PlayerCharacter::GetSingleton());
+            newBook->effects.push_back(copy);
         }
+
+        for (auto key : book->GetKeywords()) {
+            newBook->AddKeyword(key);
+        }
+
+        newBook->AddKeyword(keyword);
+        auto it = replaceModels.find(model);
+        if (it != replaceModels.end()) {
+            newBook->SetModel(it->second.c_str());
+        } else {
+            newBook->SetModel(model);
+        }
+        newBook->weight = weight;
+        newBook->value = value;
+        newBook->SetFullName(name);
+
+        newBook->SpellItem::data = spell->data;
+        newBook->SpellItem::hostileCount = spell->hostileCount;
+        newBook->SpellItem::avEffectSetting = spell->avEffectSetting;
+
+        scrollData[newBook] = new ScrollData(spell, newBook);
+        ApplyLevel(newBook);
+
+        effectLevel->effectItem.magnitude = 1;
+
+        effectCost->effectItem.magnitude = newBook->CalculateMagickaCost(RE::PlayerCharacter::GetSingleton());
     }
 }
 
@@ -382,18 +401,20 @@ void ScrollManager::DataLoaded() {
     costPerSecoundEffect = RE::TESForm::LookupByEditorID<RE::EffectSetting>("BOP_MagickaCostDisplayPerSecond");
     levelEffect = RE::TESForm::LookupByEditorID<RE::EffectSetting>("BOP_LevelDisplay");
 
-
-    const auto& [map, lock] = RE::TESForm::GetAllForms();
-    const RE::BSReadWriteLock l{lock};
-    for (auto& [id, form] : *map) {
-        if (form) {
-            if (auto book = form->As<RE::TESObjectBOOK>()) {
-                if (book->IsBookTome()) {
-                    ReplaceSpellTome(book);
-                }
-            }
-        }
+    for (auto [key, value] : scrollData) {
+        CopyBookData(value);
     }
+
+
+    //const auto& [map, lock] = RE::TESForm::GetAllForms();
+    //const RE::BSReadWriteLock l{lock};
+    //for (auto& [id, form] : *map) {
+    //    if (form) {
+    //        if (auto book = form->As<RE::TESObjectBOOK>()) {
+    //                ReplaceSpellTome(book);
+    //        }
+    //    }
+    //}
 }
 
 bool ScrollManager::OnEquip(RE::Actor* player, RE::TESBoundObject* a_object, RE::BGSEquipSlot** a_slot) {

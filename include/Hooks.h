@@ -49,4 +49,11 @@ namespace Hooks {
                           RE::BGSEquipSlot* a_slotToReplace);
         static inline REL::Relocation<decltype(thunk)> originalFunction;
     };
+
+
+    struct FormInitHook {
+        static void thunk(RE::TESObjectBOOK* ref, RE::TESFile* file);
+        static inline REL::Relocation<decltype(thunk)> originalFunction;
+        static void Install();
+    };
 }
