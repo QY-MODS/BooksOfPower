@@ -88,16 +88,6 @@ void Hooks::GetCastingTypeHook::Install() {
     originalFunction = REL::Relocation<std::uintptr_t>(RE::ScrollItem::VTABLE[0]).write_vfunc(0x55, thunk);
 }
 
-void Hooks::Install() {
-    ScrollSpellTypeHook::Install();
-    GetCastingTypeHook::Install();
-    EquipObjectHook::Install();
-    UnEquipObjectPCHook::Install();
-    EquipSpellHook::Install();
-    SpellCastEvent::Install();
-    BookInitHook::Install();
-}
-
 RE::BSEventNotifyControl Hooks::SpellCastEvent::ProcessEvent(const RE::TESSpellCastEvent* event,
                                                              RE::BSTEventSource<RE::TESSpellCastEvent>*) {
 
@@ -131,4 +121,15 @@ void Hooks::BookInitHook::thunk(RE::TESObjectBOOK* ref, RE::TESFile* file) {
 
 void Hooks::BookInitHook::Install() {
     originalFunction = REL::Relocation<std::uintptr_t>(RE::TESObjectBOOK::VTABLE[0]).write_vfunc(0x6, thunk);
+}
+
+
+void Hooks::Install() {
+    ScrollSpellTypeHook::Install();
+    GetCastingTypeHook::Install();
+    EquipObjectHook::Install();
+    UnEquipObjectPCHook::Install();
+    EquipSpellHook::Install();
+    SpellCastEvent::Install();
+    BookInitHook::Install();
 }
