@@ -7,7 +7,7 @@ void OnMessage(SKSE::MessagingInterface::Message* message) {
     if (message->type == SKSE::MessagingInterface::kDataLoaded) {
         ScrollManager::DataLoaded();
     }
-    if (message->type == SKSE::MessagingInterface::kNewGame || message->type == SKSE::MessagingInterface::kPreLoadGame) {
+    if (message->type == SKSE::MessagingInterface::kNewGame) {
         ScrollManager::CleanLevel();
     }
 }
