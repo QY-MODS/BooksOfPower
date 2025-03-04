@@ -123,13 +123,13 @@ void Hooks::BookInitHook::Install() {
     originalFunction = REL::Relocation<std::uintptr_t>(RE::TESObjectBOOK::VTABLE[0]).write_vfunc(0x6, thunk);
 }
 
-RE::ObjectRefHandle Hooks::RemoveItemHook::thunk(int64_t a_actor, RE::TESBoundObject* a_item,
+RE::ObjectRefHandle Hooks::RemoveItemHook::thunk(int64_t a_unk, RE::TESBoundObject* a_item,
                                                  std::int32_t a_count,
                                                  RE::ITEM_REMOVE_REASON a_reason,
                                   RE::ExtraDataList* a_extraList, RE::TESObjectREFR* a_moveToRef,
                                   const RE::NiPoint3* a_dropLoc, const RE::NiPoint3* a_rotate) {
-    auto result = originalFunction(a_actor, a_item, a_count, a_reason, a_extraList, a_moveToRef, a_dropLoc, a_rotate);
-    if (a_actor && a_item) {
+    auto result = originalFunction(a_unk, a_item, a_count, a_reason, a_extraList, a_moveToRef, a_dropLoc, a_rotate);
+    if (a_item) {
         auto player = RE::PlayerCharacter::GetSingleton();
         auto inv = player->GetInventory();
         auto it = inv.find(a_item);
