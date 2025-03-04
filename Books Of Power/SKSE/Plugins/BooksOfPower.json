@@ -1,5 +1,6 @@
 {
   "CastTimeCooldown": 0.01,
+  "DisplayBookOnTheOtherHand": true,
   "ScrollLevels": [
     {
       "MagnitudePercentage": 10,

@@ -259,6 +259,20 @@ void ScrollManager::ReadConfigFile() {
 
     try {
         const json data = json::parse(file);
+
+        logger::info("Reading: DisplayBookOnTheOtherHand");
+        if (data.contains("DisplayBookOnTheOtherHand")) {
+            if (data["DisplayBookOnTheOtherHand"].is_boolean()) {
+                displayBookOnTheOtherHand = data["DisplayBookOnTheOtherHand"].get<float>();
+                logger::info("Set DisplayBookOnTheOtherHand as {}", displayBookOnTheOtherHand);
+            } else {
+                logger::error("DisplayBookOnTheOtherHand must be a boolean");
+            }
+        } else {
+            logger::error("Missing DisplayBookOnTheOtherHand");
+        }
+
+
         logger::info("Reading: CastTimeCooldown");
         if (data.contains("CastTimeCooldown")) {
             if (data["CastTimeCooldown"].is_number()) {
@@ -415,6 +429,10 @@ void ScrollManager::DataLoaded() {
 
 bool ScrollManager::OnEquip(RE::Actor* player, RE::TESBoundObject* a_object, RE::BGSEquipSlot** a_slot) {
 
+    if (!displayBookOnTheOtherHand) {
+        return true;
+    }
+
     if (!a_object) {
         return true;
     }
@@ -472,17 +490,21 @@ bool ScrollManager::OnEquip(RE::Actor* player, RE::TESBoundObject* a_object, RE:
     return true;
 }
 
-bool ScrollManager::OnUnEquip(RE::Actor* player, RE::TESBoundObject* a_object, RE::BGSEquipSlot* a_slot) {
+void ScrollManager::OnUnEquip(RE::Actor* player, RE::TESBoundObject* a_object) {
+
+    if (!displayBookOnTheOtherHand) {
+        return;
+    }
 
     if (!a_object) {
-        return true;
+        return;
     }
 
     if (!player || !player->IsPlayerRef()) {
-        return true;
+        return;
     }
     if (DefaultBehavior) {
-        return true;
+        return;
     }
 
     if (a_object->HasKeywordByEditorID("BOP_ChannelingTome")) {
@@ -497,7 +519,6 @@ bool ScrollManager::OnUnEquip(RE::Actor* player, RE::TESBoundObject* a_object, R
             }
         }
     }
-    return true;
 }
 
 void ScrollManager::OnCast(RE::Actor* caster, RE::SpellItem* spell) {

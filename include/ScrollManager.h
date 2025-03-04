@@ -44,6 +44,7 @@ class ScrollManager {
     static inline handBooksMap handBooks;
 
     static inline float castTimeCooldown = 0.01;
+    static inline bool displayBookOnTheOtherHand = true;
 
     static inline scrollDataMap scrollData;
     static inline playerSkillMap playerSkill;
@@ -69,6 +70,6 @@ public:
     static void CleanLevel();
     static void DataLoaded();
     static bool OnEquip(RE::Actor* player, RE::TESBoundObject* a_object, RE::BGSEquipSlot** a_slot);
-    static bool OnUnEquip(RE::Actor* player, RE::TESBoundObject* a_object, RE::BGSEquipSlot* a_slot);
+    static void OnUnEquip(RE::Actor* player, RE::TESBoundObject* a_object);
     static void OnCast(RE::Actor* caster, RE::SpellItem* spell);
 };

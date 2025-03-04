@@ -44,16 +44,16 @@ void Hooks::UnEquipObjectPCHook::thunk(RE::ActorEquipManager* a_manager, RE::Act
                                        std::uint32_t a_count, RE::BGSEquipSlot* a_slot, bool a_queueEquip,
                                        bool a_forceEquip, bool a_playSounds, bool a_applyNow,
                                        RE::BGSEquipSlot* a_slotToReplace) {
-
-    if (ScrollManager::OnUnEquip(a_actor, a_object, a_slot)) {
-        originalFunction(a_manager, a_actor, a_object, a_extraData, a_count, a_slot, a_queueEquip, a_forceEquip,
-                            a_playSounds, a_applyNow, a_slotToReplace);
+    if (a_actor && a_object) {
+        ScrollManager::OnUnEquip(a_actor, a_object);
     }
+    originalFunction(a_manager, a_actor, a_object, a_extraData, a_count, a_slot, a_queueEquip, a_forceEquip,
+                            a_playSounds, a_applyNow, a_slotToReplace);
 }
 
 void Hooks::EquipSpellHook::thunk(RE::ActorEquipManager* a_manager, RE::Actor* a_actor, RE::SpellItem* a_spell,
                                   RE::BGSEquipSlot** a_slot_ptr) {
-    if (ScrollManager::OnEquip(a_actor, a_spell, a_slot_ptr)) {
+    if (!a_actor || !a_spell || ScrollManager::OnEquip(a_actor, a_spell, a_slot_ptr)) {
         originalFunction(a_manager, a_actor, a_spell, a_slot_ptr);
     }
 }
@@ -123,6 +123,30 @@ void Hooks::BookInitHook::Install() {
     originalFunction = REL::Relocation<std::uintptr_t>(RE::TESObjectBOOK::VTABLE[0]).write_vfunc(0x6, thunk);
 }
 
+RE::ObjectRefHandle Hooks::RemoveItemHook::thunk(int64_t a_actor, RE::TESBoundObject* a_item,
+                                                 std::int32_t a_count,
+                                                 RE::ITEM_REMOVE_REASON a_reason,
+                                  RE::ExtraDataList* a_extraList, RE::TESObjectREFR* a_moveToRef,
+                                  const RE::NiPoint3* a_dropLoc, const RE::NiPoint3* a_rotate) {
+    auto result = originalFunction(a_actor, a_item, a_count, a_reason, a_extraList, a_moveToRef, a_dropLoc, a_rotate);
+    if (a_actor && a_item) {
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto inv = player->GetInventory();
+        auto it = inv.find(a_item);
+        if (it != inv.end()) {
+            if (it->second.first != 0) {
+                return result;
+            }
+        }
+        ScrollManager::OnUnEquip(player, a_item);
+    }
+    return result;
+}
+
+void Hooks::RemoveItemHook::Install() {
+    originalFunction = REL::Relocation<std::uintptr_t>(RE::PlayerCharacter::VTABLE[0]).write_vfunc(0x56, thunk);
+}
+
 
 void Hooks::Install() {
     ScrollSpellTypeHook::Install();
@@ -132,4 +156,5 @@ void Hooks::Install() {
     EquipSpellHook::Install();
     SpellCastEvent::Install();
     BookInitHook::Install();
+    RemoveItemHook::Install();
 }
