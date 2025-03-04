@@ -18,25 +18,20 @@ void Hooks::ScrollSpellTypeHook::Install() {
 void Hooks::EquipObjectHook::Install() {
     SKSE::AllocTrampoline(14);
     auto& trampoline = SKSE::GetTrampoline();
-    originalFunction = trampoline.write_call<5>(REL::RelocationID(37951, 38907).address() + REL::Relocate(0x2e0, 0x2e0), thunk);
+    originalFunction =
+        trampoline.write_call<5>(REL::RelocationID(37938, 38894).address() + REL::Relocate(0xe5, 0x170), thunk);
 }
 
-void Hooks::EquipObjectHook::thunk(RE::ActorEquipManager* a_manager, RE::Actor* a_actor, RE::TESBoundObject* a_object,
-                                   RE::ExtraDataList* a_extraData, std::uint32_t a_count,
-                                   RE::BGSEquipSlot* a_slot, bool a_queueEquip, bool a_forceEquip,
-                                   bool a_playSounds, bool a_applyNow) {
-
-    if (ScrollManager::OnEquip(a_actor, a_object, &a_slot)) {
-        originalFunction(a_manager, a_actor, a_object, a_extraData, a_count, a_slot, a_queueEquip, a_forceEquip,
-                         a_playSounds, a_applyNow);
+void Hooks::EquipObjectHook::thunk(int64_t a1, RE::Character* a_character, RE::TESBoundObject* a_bound, int64_t a4) {
+    if (ScrollManager::OnEquip(a_character, a_bound)) {
+        originalFunction(a1, a_character, a_bound, a4);
     }
 }
 
 void Hooks::UnEquipObjectPCHook::Install() {
     SKSE::AllocTrampoline(14);
     auto& trampoline = SKSE::GetTrampoline();
-    originalFunction =
-        trampoline.write_call<5>(REL::RelocationID(37951, 38907).address() + REL::Relocate(0x2a9, 0x2a9), thunk);
+    originalFunction = trampoline.write_call<5>(REL::RelocationID(37951, 38907).address() + REL::Relocate(0x2a9, 0x2a9), thunk);
 }
 
 void Hooks::UnEquipObjectPCHook::thunk(RE::ActorEquipManager* a_manager, RE::Actor* a_actor,
@@ -53,7 +48,7 @@ void Hooks::UnEquipObjectPCHook::thunk(RE::ActorEquipManager* a_manager, RE::Act
 
 void Hooks::EquipSpellHook::thunk(RE::ActorEquipManager* a_manager, RE::Actor* a_actor, RE::SpellItem* a_spell,
                                   RE::BGSEquipSlot** a_slot_ptr) {
-    if (!a_actor || !a_spell || ScrollManager::OnEquip(a_actor, a_spell, a_slot_ptr)) {
+    if (!a_actor || !a_spell || ScrollManager::OnEquip(a_actor, a_spell)) {
         originalFunction(a_manager, a_actor, a_spell, a_slot_ptr);
     }
 }
@@ -72,9 +67,8 @@ void Hooks::EquipSpellHook::Install() {
     originalFunction =
         trampoline.write_call<5>(REL::RelocationID(37952, 38908).address() + REL::Relocate(0xd7, 0xd7),  // Click
                                  thunk);                                                                 // Clicking
-    // trampoline.write_call<5>(REL::RelocationID(37950, 38906).address() + REL::Relocate(0xc5, 0xca), thunk); // Hotkey
-    // trampoline.write_call<5>(REL::RelocationID(37939, 38895).address() + REL::Relocate(0x47, 0x47), thunkPresise); //
-    // Commonlib
+    //trampoline.write_call<5>(REL::RelocationID(37950, 38906).address() + REL::Relocate(0xc5, 0xca), thunk); // Hotkey
+    //trampoline.write_call<5>(REL::RelocationID(37939, 38895).address() + REL::Relocate(0x47, 0x47), thunk);  // Commonlib
 }
 
 RE::MagicSystem::CastingType Hooks::GetCastingTypeHook::thunk(RE::ScrollItem* ref) {

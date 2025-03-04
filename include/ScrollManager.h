@@ -69,7 +69,7 @@ public:
     static void LoadGame(Serializer* serializer);
     static void CleanLevel();
     static void DataLoaded();
-    static bool OnEquip(RE::Actor* player, RE::TESBoundObject* a_object, RE::BGSEquipSlot** a_slot);
+    static bool OnEquip(RE::Actor* player, RE::TESBoundObject* a_object);
     static void OnUnEquip(RE::Actor* player, RE::TESBoundObject* a_object);
     static void OnCast(RE::Actor* caster, RE::SpellItem* spell);
 };

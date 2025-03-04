@@ -449,8 +449,7 @@ void ScrollManager::DataLoaded() {
     //}
 }
 
-bool ScrollManager::OnEquip(RE::Actor* player, RE::TESBoundObject* a_object, RE::BGSEquipSlot** a_slot) {
-
+bool ScrollManager::OnEquip(RE::Actor* player, RE::TESBoundObject* a_object) {
     if (!displayBookOnTheOtherHand) {
         return true;
     }
@@ -496,8 +495,6 @@ bool ScrollManager::OnEquip(RE::Actor* player, RE::TESBoundObject* a_object, RE:
     }
 
     if (a_object->HasKeywordByEditorID("BOP_ChannelingTome")) {
-
-        *a_slot = right;
         if (auto scroll = a_object->As<RE::ScrollItem>()) {
 
             auto data = GetScrollData(scroll);
@@ -505,9 +502,16 @@ bool ScrollManager::OnEquip(RE::Actor* player, RE::TESBoundObject* a_object, RE:
                 auto it = handBooks.find(data->BaseSpell->GetAssociatedSkill());
                 if (it != handBooks.end()) {
                     it->second->Equip(player);
+                    DefaultBehavior = true;
+                    RE::ActorEquipManager::GetSingleton()->EquipObject(player, a_object, nullptr, 1, right, false, false, false,
+                                                                       true);
+
+                    DefaultBehavior = false;
+                    return false;
                 }
             }
         }
+
     }
     return true;
 }

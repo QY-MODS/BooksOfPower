@@ -24,10 +24,7 @@ namespace Hooks {
 
     struct EquipObjectHook {
         static void Install();
-        static void thunk(RE::ActorEquipManager* a_manager, RE::Actor* a_actor, RE::TESBoundObject* a_object,
-                          RE::ExtraDataList* a_extraData = nullptr, std::uint32_t a_count = 1,
-                          RE::BGSEquipSlot* a_slot = nullptr, bool a_queueEquip = true, bool a_forceEquip = false,
-                          bool a_playSounds = true, bool a_applyNow = false);
+        static void thunk(int64_t a1, RE::Character* a_character, RE::TESBoundObject* a_bound, int64_t a4);
         static inline REL::Relocation<decltype(thunk)> originalFunction;
     };
 
