@@ -14,10 +14,32 @@ void ScrollManager::ReplaceBookWithScroll(RE::TESObjectBOOK* book) {
     }
 
     auto id = book->GetFormID();
+    auto editor = Utils::GetEditorId(book);
 
     if (auto scroll = Utils::CreateFormByType<RE::ScrollItem>()) {
         scrollData[scroll] = new ScrollData(nullptr, scroll, book);
         scroll->SetFormID(id, false);
+
+        logger::info("Replacing book with scroll: {:x} {}", id, editor);
+
+        scroll->SetFormEditorID(editor.c_str());
+
+        {
+            const auto& [map, lock] = RE::TESForm::GetAllFormsByEditorID();
+            const RE::BSReadWriteLock l{lock};
+
+            map->erase(editor);
+            map->insert(RE::BSTTuple(editor, scroll));
+        }
+
+        {
+            const auto& [map, lock] = RE::TESForm::GetAllForms();
+            const RE::BSReadWriteLock l{lock};
+
+            map->erase(id);
+            map->insert(RE::BSTTuple(id, scroll));
+        }
+
     }
 }
 
