@@ -43,7 +43,7 @@ class ScrollManager {
     static inline replaceModelMap replaceModels;
     static inline handBooksMap handBooks;
 
-    static inline float castTimeCooldown = 0.01;
+    static inline float concentrationCastingTimeCooldown = 0.01;
     static inline bool displayBookOnTheOtherHand = true;
 
     static inline scrollDataMap scrollData;

@@ -60,4 +60,11 @@ namespace Hooks {
         static inline REL::Relocation<decltype(thunk)> originalFunction;
         static void Install();
     };
+
+
+    struct CalculateCastCost {
+        static float thunk(RE::ActorMagicCaster* caster);
+        static inline REL::Relocation<decltype(thunk)> originalFunction;
+        static void Install();
+    };
 }

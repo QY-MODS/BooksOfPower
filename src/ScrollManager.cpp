@@ -138,7 +138,7 @@ ScrollLevel* ScrollManager::GetScrollLevel(RE::SpellItem* scroll) {
         return scrollLevels.front();
     }
     for (auto scrollLevel : scrollLevels) {
-        if (scrollLevel->casts > level->casts) {
+        if (scrollLevel->casts >= level->casts) {
             return last;
         }
         last = scrollLevel;
@@ -205,7 +205,7 @@ void ScrollManager::HandleLevelUp(RE::SpellItem* spell) {
         playerSkill[spell] = new PlayerLevel(0);
     }
 
-    if (playerSkill[spell]->CanLevelUp()) {
+    if (spell->data.castingType != RE::MagicSystem::CastingType::kConcentration || playerSkill[spell]->CanLevelUp()) {
         playerSkill[spell]->casts++;
         playerSkill[spell]->lastLevelUp = now;
         ApplyLevel(spell);
@@ -235,7 +235,7 @@ void ScrollManager::HandleLevelUp(RE::SpellItem* spell) {
 playerSkillMap& ScrollManager::GetTimesCastMap() {
     return playerSkill; }
 
-float ScrollManager::GetLevelUpCooldown() { return castTimeCooldown; }
+float ScrollManager::GetLevelUpCooldown() { return concentrationCastingTimeCooldown; }
 
 void ScrollManager::SaveGame(Serializer* serializer) {
     serializer->Write<uint32_t>(playerSkill.size());
@@ -295,13 +295,13 @@ void ScrollManager::ReadConfigFile() {
         }
 
 
-        logger::info("Reading: CastTimeCooldown");
-        if (data.contains("CastTimeCooldown")) {
-            if (data["CastTimeCooldown"].is_number()) {
-                castTimeCooldown = data["CastTimeCooldown"].get<float>();
-                logger::info("Set cast time cooldown as {}", castTimeCooldown);
+        logger::info("Reading: ConcentrationCastTimeCooldown");
+        if (data.contains("ConcentrationCastTimeCooldown")) {
+            if (data["ConcentrationCastTimeCooldown"].is_number()) {
+                concentrationCastingTimeCooldown = data["ConcentrationCastTimeCooldown"].get<float>();
+                logger::info("Set cast time cooldown as {}", concentrationCastingTimeCooldown);
             } else {
-                logger::error("CastTimeCooldown must be a number");
+                logger::error("ConcentrationCastTimeCooldown must be a number");
             }
         }
         else {
@@ -552,6 +552,7 @@ void ScrollManager::OnCast(RE::Actor* caster, RE::SpellItem* spell) {
         HandleLevelUp(spell);
     }
 }
+
 
 RE::TESObjectWEAP* HandBook::GetWeapon() {
     if (weapon == nullptr) {

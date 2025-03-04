@@ -141,6 +141,28 @@ void Hooks::RemoveItemHook::Install() {
     originalFunction = REL::Relocation<std::uintptr_t>(RE::PlayerCharacter::VTABLE[0]).write_vfunc(0x56, thunk);
 }
 
+float Hooks::CalculateCastCost::thunk(RE::ActorMagicCaster* caster) { 
+    auto result = originalFunction(caster);
+
+    if (caster && caster->currentSpell) {
+        if (auto actor = caster->GetCasterAsActor()) {
+            if (auto spell = caster->currentSpell->As<RE::SpellItem>()) {
+                ScrollManager::OnCast(actor, spell);
+            }
+        }
+    }
+
+    return result;
+}
+
+void Hooks::CalculateCastCost::Install() {
+    SKSE::AllocTrampoline(14);
+    auto& trampoline = SKSE::GetTrampoline();
+    //originalFunction =
+    //    trampoline.write_call<5>(REL::RelocationID(33362, 34143).address() + REL::Relocate(0x1fb, 0x39e), thunk); // This is for non concetration spells we do not want that
+    originalFunction =
+        trampoline.write_call<5>(REL::RelocationID(33362, 34143).address() + REL::Relocate(0x1a3, 0x1a7), thunk);
+}
 
 void Hooks::Install() {
     ScrollSpellTypeHook::Install();
@@ -151,4 +173,6 @@ void Hooks::Install() {
     SpellCastEvent::Install();
     BookInitHook::Install();
     RemoveItemHook::Install();
+    CalculateCastCost::Install();
 }
+

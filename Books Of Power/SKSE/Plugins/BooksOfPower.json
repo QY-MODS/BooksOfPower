@@ -1,50 +1,56 @@
 {
-  "CastTimeCooldown": 0.01,
+  "ConcentrationCastTimeCooldown": 0.01,
   "DisplayBookOnTheOtherHand": true,
   "ScrollLevels": [
     {
       "MagnitudePercentage": 10,
       "DurationPercentage": 10,
-      "CostPercentage": 120
+      "CostPercentage": 130
     },
     {
-      "NumberOfSuccessfulCasts": 2,
+      "NumberOfSuccessfulCasts": 1,
       "MagnitudePercentage": 30,
       "DurationPercentage": 30,
-      "CostPercentage": 110
+      "CostPercentage": 120
     },
     {
       "NumberOfSuccessfulCasts": 3,
       "MagnitudePercentage": 50,
       "DurationPercentage": 50,
+      "CostPercentage": 110
+    },
+    {
+      "NumberOfSuccessfulCasts": 6,
+      "MagnitudePercentage": 70,
+      "DurationPercentage": 70,
       "CostPercentage": 100
     },
     {
-      "NumberOfSuccessfulCasts": 5,
+      "NumberOfSuccessfulCasts": 10,
       "MagnitudePercentage": 80,
       "DurationPercentage": 80,
       "CostPercentage": 100
     },
     {
-      "NumberOfSuccessfulCasts": 8,
+      "NumberOfSuccessfulCasts": 15,
       "MagnitudePercentage": 90,
       "DurationPercentage": 90,
       "CostPercentage": 100
     },
     {
-      "NumberOfSuccessfulCasts": 13,
+      "NumberOfSuccessfulCasts": 21,
       "MagnitudePercentage": 95,
       "DurationPercentage": 95,
       "CostPercentage": 100
     },
     {
-      "NumberOfSuccessfulCasts": 21,
+      "NumberOfSuccessfulCasts": 28,
       "MagnitudePercentage": 100,
       "DurationPercentage": 100,
       "CostPercentage": 100
     },
     {
-      "NumberOfSuccessfulCasts": 34
+      "NumberOfSuccessfulCasts": 36
     }
   ],
   "BookModelSwap": [
