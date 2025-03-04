@@ -217,7 +217,7 @@ void ScrollManager::HandleLevelUp(RE::SpellItem* spell) {
                     if (skill->lastLevelCasts != level->casts) 
                     {
                         skill->lastLevelCasts = level->casts;
-                        RE::DebugNotification(std::format("Your knowledge of the spell {} is at level {}", data->BaseSpell->GetName(), level->level).c_str());
+                        RE::DebugNotification(std::format("Your Knowledge of The Spell {} is at Level {}", data->BaseSpell->GetName(), level->level).c_str());
                     }
                 } 
                 else 
@@ -225,7 +225,7 @@ void ScrollManager::HandleLevelUp(RE::SpellItem* spell) {
                     auto player = RE::PlayerCharacter::GetSingleton();
                     if (!player->HasSpell(data->BaseSpell)) {
                         player->AddSpell(data->BaseSpell);
-                        RE::DebugNotification(std::format("You mastered the spell {}", data->BaseSpell->GetName()).c_str());
+                        RE::DebugNotification(std::format("You Mastered the Spell {}", data->BaseSpell->GetName()).c_str());
                     }
                 }
         }
