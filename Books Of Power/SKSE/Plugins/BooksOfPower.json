@@ -50,7 +50,10 @@
       "CostPercentage": 100
     },
     {
-      "NumberOfSuccessfulCasts": 36
+      "NumberOfSuccessfulCasts": 36,
+      "MagnitudePercentage": 110,
+      "DurationPercentage": 110,
+      "CostPercentage": 90
     }
   ],
   "BookModelSwap": [

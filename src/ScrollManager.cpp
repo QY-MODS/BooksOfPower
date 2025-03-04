@@ -132,6 +132,12 @@ PlayerLevel* ScrollManager::GetPlayerSkill(RE::SpellItem* item) {
 }
 
 ScrollLevel* ScrollManager::GetScrollLevel(RE::SpellItem* scroll) { 
+    auto data = GetScrollData(scroll);
+
+    if (data && RE::PlayerCharacter::GetSingleton()->HasSpell(data->BaseSpell)) {
+        return scrollLevels.back();
+    }
+
     ScrollLevel* last = nullptr;
     auto level = GetPlayerSkill(scroll);
     if (!level) {
@@ -143,7 +149,7 @@ ScrollLevel* ScrollManager::GetScrollLevel(RE::SpellItem* scroll) {
         }
         last = scrollLevel;
     }
-    return nullptr;
+    return last;
 }
 
 void ScrollManager::ApplyLevel(RE::SpellItem* scroll) {
