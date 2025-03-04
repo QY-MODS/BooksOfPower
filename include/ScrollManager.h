@@ -57,7 +57,7 @@ class ScrollManager {
     static ScrollData* GetScrollData(RE::SpellItem* item);
     static PlayerLevel* GetPlayerSkill(RE::SpellItem* item);
     static ScrollLevel* GetScrollLevel(RE::SpellItem* level);
-    static void ApplyLevel(RE::SpellItem* scroll);
+    static void ApplyLevel(RE::SpellItem* scroll, ScrollLevel* level);
     static void HandleLevelUp(RE::SpellItem* spell);
     static void ReadConfigFile();
     static void ApplyEffectsToScroll(ScrollData* data);

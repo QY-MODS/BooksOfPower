@@ -107,7 +107,8 @@ void ScrollManager::ApplyEffectsToScroll(ScrollData* data) {
         newBook->SpellItem::avEffectSetting = spell->avEffectSetting;
         newBook->equipSlot = spell->equipSlot;
         scrollData[newBook] = new ScrollData(spell, newBook);
-        ApplyLevel(newBook);
+        
+        ApplyLevel(newBook, GetScrollLevel(newBook));
 
         effectLevel->effectItem.magnitude = 1;
 
@@ -152,30 +153,27 @@ ScrollLevel* ScrollManager::GetScrollLevel(RE::SpellItem* scroll) {
     return last;
 }
 
-void ScrollManager::ApplyLevel(RE::SpellItem* scroll) {
+void ScrollManager::ApplyLevel(RE::SpellItem* scroll, ScrollLevel* level) {
     auto data = GetScrollData(scroll);
     if (data) {
-        auto level = GetScrollLevel(scroll);
-        if (level) {
-            auto base = data->BaseSpell;
-            auto scroll = data->Scroll;
-            scroll->data.costOverride = base->data.costOverride * level->costPercentage / 100;
-            for (int i = scroll->effects.size()-1; i >= 0; i--) {
-                if (i < 2) {
-                    if (scroll->effects[i]->baseEffect == costPerSecoundEffect ||
-                        scroll->effects[i]->baseEffect == costEffect) {
-                        scroll->effects[i]->effectItem.magnitude =
-                            scroll->CalculateMagickaCost(RE::PlayerCharacter::GetSingleton());
-                    } else if (scroll->effects[i]->baseEffect == levelEffect) {
-                        scroll->effects[i]->effectItem.magnitude = level->level;
-                    }
-                } else {
-                    if (i - 2 < base->effects.size()) {
-                        scroll->effects[i]->effectItem.magnitude = base->effects[i - 2]->effectItem.magnitude * level->magnitudePercentage / 100;
-                        scroll->effects[i]->effectItem.duration = base->effects[i - 2]->effectItem.duration * level->durationPercentage / 100;
-                        scroll->effects[i]->cost = base->effects[i - 2]->cost * level->costPercentage / 100;
-                    } 
+        auto base = data->BaseSpell;
+        auto scroll = data->Scroll;
+        scroll->data.costOverride = base->data.costOverride * level->costPercentage / 100;
+        for (int i = scroll->effects.size()-1; i >= 0; i--) {
+            if (i < 2) {
+                if (scroll->effects[i]->baseEffect == costPerSecoundEffect ||
+                    scroll->effects[i]->baseEffect == costEffect) {
+                    scroll->effects[i]->effectItem.magnitude =
+                        scroll->CalculateMagickaCost(RE::PlayerCharacter::GetSingleton());
+                } else if (scroll->effects[i]->baseEffect == levelEffect) {
+                    scroll->effects[i]->effectItem.magnitude = level->level;
                 }
+            } else {
+                if (i - 2 < base->effects.size()) {
+                    scroll->effects[i]->effectItem.magnitude = base->effects[i - 2]->effectItem.magnitude * level->magnitudePercentage / 100;
+                    scroll->effects[i]->effectItem.duration = base->effects[i - 2]->effectItem.duration * level->durationPercentage / 100;
+                    scroll->effects[i]->cost = base->effects[i - 2]->cost * level->costPercentage / 100;
+                } 
             }
         }
     }
@@ -191,9 +189,9 @@ void ScrollManager::HandleLevelUp(RE::SpellItem* spell) {
     if (spell->data.castingType != RE::MagicSystem::CastingType::kConcentration || playerSkill[spell]->CanLevelUp()) {
         playerSkill[spell]->casts++;
         playerSkill[spell]->lastLevelUp = now;
-        ApplyLevel(spell);
-        auto data = GetScrollData(spell);
         auto level = GetScrollLevel(spell);
+        ApplyLevel(spell, level);
+        auto data = GetScrollData(spell);
         auto skill = GetPlayerSkill(spell);
         if (data) {
                 if (level && skill) {
@@ -242,14 +240,14 @@ void ScrollManager::LoadGame(Serializer* serializer) {
         auto level = serializer->Read<uint32_t>();
         auto lastLevelCasts = serializer->Read<uint32_t>();
         playerSkill[form] = new PlayerLevel(level, lastLevelCasts);
-        ApplyLevel(form);
+        ApplyLevel(form, GetScrollLevel(form));
     }
 }
 
 void ScrollManager::CleanLevel() {
     for (auto [key, value] : playerSkill) {
         value->casts = 0;
-        ApplyLevel(key);
+        ApplyLevel(key, scrollLevels.front());
         delete value;
     }
 
