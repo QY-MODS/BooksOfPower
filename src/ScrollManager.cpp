@@ -177,29 +177,6 @@ void ScrollManager::ApplyLevel(RE::SpellItem* scroll) {
                     } 
                 }
             }
-        } else {
-            auto base = data->BaseSpell;
-            auto scroll = data->Scroll;
-            scroll->data.costOverride = base->data.costOverride;
-            for (int i = scroll->effects.size() - 1; i >= 0; i--) {
-                if (i < 2) {
-                    if (scroll->effects[i]->baseEffect == costPerSecoundEffect ||
-                        scroll->effects[i]->baseEffect == costEffect) {
-                        scroll->effects[i]->effectItem.magnitude = scroll->CalculateMagickaCost(RE::PlayerCharacter::GetSingleton());
-                    } 
-                    else 
-                        if (scroll->effects[i]->baseEffect == levelEffect) 
-                    {
-                        scroll->effects[i]->effectItem.magnitude = maxLevel;
-                    }
-                } else {
-                    if (i - 2 < base->effects.size()) {
-                        scroll->effects[i]->effectItem.magnitude = base->effects[i - 2]->effectItem.magnitude;
-                        scroll->effects[i]->effectItem.duration = base->effects[i - 2]->effectItem.duration;
-                        scroll->effects[i]->cost = base->effects[i - 2]->cost;
-                    } 
-                }
-            }
         }
     }
 }
@@ -220,20 +197,24 @@ void ScrollManager::HandleLevelUp(RE::SpellItem* spell) {
         auto skill = GetPlayerSkill(spell);
         if (data) {
                 if (level && skill) {
-                    if (skill->lastLevelCasts != level->casts) 
-                    {
-                        skill->lastLevelCasts = level->casts;
-                        RE::DebugNotification(std::format("Your Knowledge of The Spell {} is at Level {}", data->BaseSpell->GetName(), level->level).c_str());
+
+                    if (level == scrollLevels.back()) {
+                        auto player = RE::PlayerCharacter::GetSingleton();
+                        if (!player->HasSpell(data->BaseSpell)) {
+                            player->AddSpell(data->BaseSpell);
+                            RE::DebugNotification(
+                                std::format("You Mastered the Spell {}", data->BaseSpell->GetName()).c_str());
+                        }
+                    } else {
+                        if (skill->lastLevelCasts != level->casts) {
+                            skill->lastLevelCasts = level->casts;
+                            RE::DebugNotification(std::format("Your Knowledge of The Spell {} is at Level {}",
+                                                              data->BaseSpell->GetName(), level->level)
+                                                      .c_str());
+                        }
                     }
+
                 } 
-                else 
-                {
-                    auto player = RE::PlayerCharacter::GetSingleton();
-                    if (!player->HasSpell(data->BaseSpell)) {
-                        player->AddSpell(data->BaseSpell);
-                        RE::DebugNotification(std::format("You Mastered the Spell {}", data->BaseSpell->GetName()).c_str());
-                    }
-                }
         }
     }
 }
