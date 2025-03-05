@@ -6,7 +6,7 @@
 
   Clone [this](https://github.com/CharmedBaryon/CommonLibSSE-NG) Repository, to somewhere safe and adds its path to this environment variable on Windows.
   
-## Optional ouput folder optional variables
+## Optional output folder optional variables
 
 - SKYRIM_FOLDER
 - WILDLANDER_OWRT_FOLDER
