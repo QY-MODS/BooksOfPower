@@ -108,11 +108,11 @@ void Hooks::SpellCastEvent::Install() {
     RE::ScriptEventSourceHolder::GetSingleton()->AddEventSink(new SpellCastEvent());
 }
 
-void Hooks::BookInitHook::thunk(RE::TESObjectBOOK* ref, RE::TESFile* file) {
-    originalFunction(ref, file);
+bool Hooks::BookInitHook::thunk(RE::TESObjectBOOK* ref, RE::TESFile* file) {
+    auto result = originalFunction(ref, file);
     ScrollManager::ReplaceBookWithScroll(ref);
+    return result;
 }
-
 void Hooks::BookInitHook::Install() {
     originalFunction = REL::Relocation<std::uintptr_t>(RE::TESObjectBOOK::VTABLE[0]).write_vfunc(0x6, thunk);
 }

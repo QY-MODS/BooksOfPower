@@ -46,7 +46,7 @@ namespace Hooks {
 
 
     struct BookInitHook {
-        static void thunk(RE::TESObjectBOOK* ref, RE::TESFile* file);
+        static bool thunk(RE::TESObjectBOOK* ref, RE::TESFile* file);
         static inline REL::Relocation<decltype(thunk)> originalFunction;
         static void Install();
     };

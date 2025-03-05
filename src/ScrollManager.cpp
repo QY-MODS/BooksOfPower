@@ -9,7 +9,7 @@ void ScrollManager::ReplaceBookWithScroll(RE::TESObjectBOOK* book) {
         return;
     }
 
-    if (!book->IsBookTome()) {
+    if (!book->GetSpell()) {
         return;
     }
 
